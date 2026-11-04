@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Original site theme — the single source of truth for the look.
+   Tailwind utilities remain available for new work; the legacy CSS below
+   is unlayered, so it always wins over Tailwind's layered defaults. */
+@import "./site.css";
