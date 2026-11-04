@@ -433,6 +433,7 @@ export default function Game() {
           </div>
         )}
         <p className="g-credit">
+          <img src="/img/yaticorp-icon.png" alt="" />
           Developed by{' '}
           <a href="https://yaticorp.com" target="_blank" rel="noopener">
             Yaticorp
