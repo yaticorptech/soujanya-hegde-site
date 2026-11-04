@@ -132,7 +132,7 @@ export default function Home() {
           </div>
           <Reveal className="hero-bento">
             <figure className="b-main">
-              <img src="/img/madikeri-ps-01.jpg" alt="Soujanya laughing with a team during the cup-tower challenge" />
+              <img src="/img/sparktree-13.jpg" alt="Soujanya Hegde and Preetham Ponnappa, SparkTree lead trainers" />
             </figure>
             <figure className="b-side">
               <img src="/img/bootcamp-01.jpg" alt="Kids giving thumbs up at the confidence bootcamp" />
