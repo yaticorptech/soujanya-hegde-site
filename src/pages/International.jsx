@@ -6,7 +6,7 @@ const STAMPS = [
   {
     seal: '10 YRS', flag: '🇳🇬', title: 'Abuja, Nigeria', where: 'Nrityalaya · Indian Cultural Association',
     text: 'Founded and directed Nrityalaya dance institute, led the Golden Girls troupe and served as Cultural Secretary of the ICA — recognised by the High Commissioner of India in 2012.',
-    img: '/img/stage-black.jpg',
+    img: '/img/solo-010.jpg', imgAlt: 'Soujanya in traditional dance dress on stage', imgStyle: { objectPosition: '50% 20%' },
   },
   {
     seal: '2017', flag: '🇻🇳', title: 'Vietnam', where: 'Mrs India Worldwide semi-finals',
