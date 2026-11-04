@@ -49,6 +49,62 @@ export default function Game() {
   const pathRef = useRef([DOTS[0]])
   const boardRef = useRef(null)
   const dragging = useRef(false)
+  const audioRef = useRef(null)
+
+  // the context must be created/resumed during a user gesture to be allowed to play
+  const ensureAudio = () => {
+    if (!audioRef.current) {
+      const Ctx = window.AudioContext || window.webkitAudioContext
+      if (Ctx) audioRef.current = new Ctx()
+    }
+    audioRef.current?.resume?.()
+    return audioRef.current
+  }
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.close?.()
+    }
+  }, [])
+
+  const playWin = () => {
+    const ctx = ensureAudio()
+    if (!ctx) return
+    const t0 = ctx.currentTime
+    const master = ctx.createGain()
+    master.gain.value = 0.18
+    master.connect(ctx.destination)
+    // ascending golden chime: C5 → E5 → G5 → C6
+    ;[523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.type = 'triangle'
+      o.frequency.value = f
+      const t = t0 + i * 0.13
+      g.gain.setValueAtTime(0, t)
+      g.gain.linearRampToValueAtTime(0.9, t + 0.02)
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.9)
+      o.connect(g)
+      g.connect(master)
+      o.start(t)
+      o.stop(t + 1)
+    })
+    // soft sparkle chord on top
+    ;[1318.5, 1568, 2093].forEach((f) => {
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.type = 'sine'
+      o.frequency.value = f
+      const t = t0 + 0.5
+      g.gain.setValueAtTime(0, t)
+      g.gain.linearRampToValueAtTime(0.3, t + 0.04)
+      g.gain.exponentialRampToValueAtTime(0.001, t + 1.5)
+      o.connect(g)
+      g.connect(master)
+      o.start(t)
+      o.stop(t + 1.6)
+    })
+  }
 
   const commit = (p) => {
     pathRef.current = p
@@ -57,7 +113,11 @@ export default function Game() {
 
   useEffect(() => {
     if (stage !== 'play') return
-    if (path[path.length - 1] === LAST_DOT) setStage('done')
+    if (path[path.length - 1] === LAST_DOT) {
+      playWin()
+      setStage('done')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, path])
 
   useEffect(() => {
@@ -136,6 +196,7 @@ export default function Game() {
 
   const onDown = (e) => {
     e.preventDefault()
+    ensureAudio()
     const id = cellFromEvent(e)
     if (id < 0) return
     dragging.current = true
