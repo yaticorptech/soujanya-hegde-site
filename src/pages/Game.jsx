@@ -1,19 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Kicker } from '../components/ui'
 import useTitle from '../lib/useTitle'
 
 const CODE = '1234'
-const GAME_SECONDS = 10
+const GOAL = 10
 const REDIRECT_MS = 2600
-
-const verdict = (score) => {
-  if (score >= 18) return 'Standing ovation!'
-  if (score >= 12) return 'Star of the show!'
-  if (score >= 6) return 'Great performance!'
-  if (score >= 1) return 'The show must go on!'
-  return 'Stage fright? Try again sometime!'
-}
 
 export default function Game() {
   useTitle('Backstage — Soujanya Hegde', 'A members-only mini game behind the curtain.')
@@ -22,27 +14,12 @@ export default function Game() {
   const [code, setCode] = useState('')
   const [err, setErr] = useState(false)
   const [score, setScore] = useState(0)
-  const [left, setLeft] = useState(GAME_SECONDS)
   const [pos, setPos] = useState({ x: 50, y: 50 })
-  const endAt = useRef(0)
 
   useEffect(() => {
-    if (stage !== 'play') return
-    endAt.current = performance.now() + GAME_SECONDS * 1000
-    const id = setInterval(() => {
-      const ms = endAt.current - performance.now()
-      if (ms <= 0) {
-        clearInterval(id)
-        setLeft(0)
-        setStage('done')
-      } else {
-        setLeft(ms / 1000)
-      }
-    }, 100)
-    return () => {
-      clearInterval(id)
-    }
-  }, [stage])
+    if (stage !== 'play' || score < GOAL) return
+    setStage('done')
+  }, [stage, score])
 
   useEffect(() => {
     if (stage !== 'done') return
@@ -71,7 +48,6 @@ export default function Game() {
 
   const start = () => {
     setScore(0)
-    setLeft(GAME_SECONDS)
     hop()
     setStage('play')
   }
@@ -124,12 +100,12 @@ export default function Game() {
               Catch the <em>spotlight.</em>
             </h1>
             <p>
-              Tap the golden star as many times as you can in <strong>{GAME_SECONDS} seconds</strong>. When the timer runs
-              out, the curtain rises on the show.
+              Catch the golden star <strong>{GOAL} times</strong> — no clock, no pressure. When you catch them all, the
+              curtain rises on the show.
             </p>
             <div className="g-row">
               <button className="btn btn--gold" type="button" onClick={start}>
-                Start the clock
+                Start the game
               </button>
             </div>
           </div>
@@ -139,15 +115,15 @@ export default function Game() {
           <div className="g-play">
             <div className="g-hud">
               <div>
-                <small>Score</small>
+                <small>Caught</small>
                 <b>{score}</b>
               </div>
               <div className="g-timebar" aria-hidden="true">
-                <i style={{ width: `${(left / GAME_SECONDS) * 100}%` }} />
+                <i style={{ width: `${(score / GOAL) * 100}%` }} />
               </div>
               <div>
-                <small>Time</small>
-                <b>{left.toFixed(1)}s</b>
+                <small>Goal</small>
+                <b>{GOAL}</b>
               </div>
             </div>
             <div className="g-arena">
@@ -166,10 +142,10 @@ export default function Game() {
 
         {stage === 'done' && (
           <div className="g-card">
-            <Kicker>Time's up</Kicker>
-            <div className="g-score">{score}</div>
+            <Kicker>All caught</Kicker>
+            <div className="g-score">✦</div>
             <h1>
-              <em>{verdict(score)}</em>
+              <em>Star of the show!</em>
             </h1>
             <p>Raising the curtain on the show…</p>
             <div className="g-row">
