@@ -14,6 +14,7 @@ const SparkTree = lazy(() => import('./pages/SparkTree'))
 const Chatroom = lazy(() => import('./pages/Chatroom'))
 const Gallery = lazy(() => import('./pages/Gallery'))
 const Contact = lazy(() => import('./pages/Contact'))
+const Game = lazy(() => import('./pages/Game'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 const PAGES = {
@@ -223,6 +224,7 @@ export default function App() {
           <Route path="/chatroom" element={<Chatroom />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/game" element={<Game />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

@@ -857,3 +857,32 @@ picture{display:contents}
   .rcard,.rcard.cr,.rcard.cl{left:6%;right:6%;width:auto;margin:0;text-align:center;transform:translateY(44px);padding:14px 16px}
   .rcard p{font-size:.9rem}
 }
+
+/* ================= /game — backstage mini-game ================= */
+.game{min-height:76vh;display:grid;place-items:center}
+.game .wrap{width:100%}
+.g-card{max-width:540px;margin:0 auto;text-align:center}
+.g-emblem{width:84px;height:84px;margin:0 auto 20px;display:grid;place-items:center;font-size:2rem;color:var(--gold);border:1px solid var(--gold-dim);border-radius:50%;background:radial-gradient(circle at 50% 28%,rgba(226,177,76,.18),transparent 70%);animation:gpulse 2.6s ease-in-out infinite}
+@keyframes gpulse{0%,100%{box-shadow:0 0 0 0 rgba(226,177,76,.3)}50%{box-shadow:0 0 0 20px rgba(226,177,76,0)}}
+.game h1{font-family:var(--display);font-weight:600;font-size:clamp(2.1rem,6vw,3.3rem);line-height:1.06;margin:12px 0 12px;letter-spacing:-.01em}
+.game h1 em{font-style:italic;color:var(--gold-2)}
+.game p{color:rgba(248,241,230,.65);max-width:42ch;margin:0 auto}
+.g-row{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:26px;flex-wrap:wrap}
+.g-row input{width:176px;text-align:center;letter-spacing:.45em;font-size:1.25rem;padding:14px 6px 14px 14px;background:rgba(248,241,230,.06);border:1px solid rgba(226,177,76,.35);border-radius:999px;color:var(--ivory);transition:border-color .25s}
+.g-row input:focus{outline:none;border-color:var(--gold)}
+.g-row input::placeholder{color:rgba(248,241,230,.3)}
+.g-err .g-row input{border-color:var(--rose);animation:gshake .4s}
+@keyframes gshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.g-msg{margin-top:14px;color:var(--rose-2);font-size:.95rem}
+.g-play{max-width:760px;margin:0 auto}
+.g-hud{display:flex;align-items:center;gap:18px;margin-bottom:16px}
+.g-hud>div{display:grid;line-height:1.15;text-align:center;min-width:64px}
+.g-hud small{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(248,241,230,.5)}
+.g-hud b{font-family:var(--display);font-size:1.5rem;color:var(--gold-2);font-variant-numeric:tabular-nums}
+.g-timebar{flex:1;height:6px;border-radius:999px;background:rgba(248,241,230,.12);overflow:hidden}
+.g-timebar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-3),var(--gold-2));transition:width .1s linear}
+.g-arena{position:relative;height:min(58vh,460px);border:1px solid rgba(226,177,76,.25);border-radius:22px;background:radial-gradient(120% 95% at 50% 0%,rgba(59,29,71,.7),rgba(26,12,31,.95));overflow:hidden;touch-action:manipulation}
+.g-star{position:absolute;width:64px;height:64px;transform:translate(-50%,-50%);display:grid;place-items:center;font-size:2.1rem;color:var(--velvet);background:radial-gradient(circle at 35% 30%,var(--gold-2),var(--gold) 55%,var(--gold-3));border-radius:50%;box-shadow:0 0 30px rgba(226,177,76,.55);user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.g-star:active{transform:translate(-50%,-50%) scale(.88)}
+.g-score{font-family:var(--display);font-size:clamp(4.5rem,15vw,7.5rem);line-height:1;color:var(--gold-2);margin:6px 0 2px}
+@media (max-width:640px){.g-arena{height:62vh}.g-star{width:72px;height:72px;font-size:2.4rem}}
