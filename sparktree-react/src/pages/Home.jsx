@@ -77,11 +77,6 @@ function Count({ to }) {
   return <span ref={ref}>{val}</span>
 }
 
-const TRAINERS = [
-  ['Soujanya Hegde', 'Celebrity host, corporate trainer and Mrs India Worldwide finalist — brings 20 years of stagecraft to every session.'],
-  ['Preetham Ponnappa', 'Trainer and facilitator who turns nervous first-timers into speakers who enjoy the stage.'],
-]
-
 const QUOTES = [
   ['★★★★★', 'Step Up by SparkTree was a truly transformative experience. Confidence soared and communication skills sharpened. The sessions pushed us beyond our comfort zones.', 'BG', 'Lion Bindu Ganapathi', 'Zone Chairperson'],
   ['★★★★', 'The Mic Magic session was truly a game changer — body language, speech structure, ideation and all the little details that make a big difference. It gave me the confidence to deliver a speech on any topic.', 'AM', 'Alka Manoj', 'Founder & Designer, Ohana by Alka'],
