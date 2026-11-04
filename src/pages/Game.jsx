@@ -33,6 +33,12 @@ const cy = (id) => (Math.floor(id / N) + 0.5) * CELL
 /** Highest dot number already on the path (dots are only enterable in order). */
 const dotsVisited = (path) => path.reduce((m, c) => Math.max(m, DOTMAP[c] || 0), 0)
 
+/** The line is locked up to the last star it reached — that part can't be erased. */
+const lockedLenOf = (path) => {
+  for (let i = path.length - 1; i >= 0; i--) if (DOTMAP[path[i]]) return i + 1
+  return 1
+}
+
 export default function Game() {
   useTitle('Backstage — Soujanya Hegde', 'A members-only mini game behind the curtain.')
   const navigate = useNavigate()
@@ -88,8 +94,9 @@ export default function Game() {
     let cur = pathRef.current
     const idx = cur.indexOf(target)
     if (idx >= 0) {
-      // dragging back over the line erases it up to that point
-      if (idx < cur.length - 1) commit(cur.slice(0, idx + 1))
+      // dragging back over the line erases it up to that point — but never past a reached star
+      const keep = Math.max(idx + 1, lockedLenOf(cur))
+      if (keep < cur.length) commit(cur.slice(0, keep))
       return
     }
     let guard = 0
@@ -147,7 +154,7 @@ export default function Game() {
   }
 
   const undo = () => {
-    if (pathRef.current.length > 1) commit(pathRef.current.slice(0, -1))
+    if (pathRef.current.length > lockedLenOf(pathRef.current)) commit(pathRef.current.slice(0, -1))
   }
 
   const reset = () => {
@@ -249,11 +256,11 @@ export default function Game() {
                 </b>
               </div>
               <div className="zip-btns">
-                <button className="zbtn" type="button" onClick={undo} disabled={path.length < 2}>
+                <button className="zbtn" type="button" onClick={undo} disabled={path.length <= lockedLenOf(path)}>
                   Undo
                 </button>
                 <button className="zbtn" type="button" onClick={reset} disabled={path.length < 2}>
-                  Reset
+                  Restart
                 </button>
               </div>
             </div>
@@ -309,7 +316,7 @@ export default function Game() {
                 })}
               </svg>
             </div>
-            <p className="zip-tip">Drag from star 1 · connect the stars in order · one continuous line</p>
+            <p className="zip-tip">Connect the stars in order · reaching a star locks the line so far</p>
           </div>
         )}
 
