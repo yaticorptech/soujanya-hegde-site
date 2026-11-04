@@ -785,3 +785,36 @@ picture{display:contents}
 .brands .track span:hover{color:var(--gold)}
 .gal-strip>a{display:block;flex:0 0 clamp(170px,21vw,270px);aspect-ratio:4/3;margin-right:14px;border-radius:14px;
   overflow:hidden;border:1px solid rgba(226,177,76,.22);position:relative;background:var(--plum-2)}
+
+/* ---------- journey: interactive zig-zag timeline ---------- */
+@media(min-width:901px){
+  .journey-track{position:relative;height:min(560px,62vh);gap:0}
+  .journey-track .jz{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+  .jz polyline{fill:none;stroke-width:2;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+  .jz .base{stroke:rgba(226,177,76,.18)}
+  .jz .lit{stroke:var(--gold);stroke-dasharray:100;stroke-dashoffset:100;filter:drop-shadow(0 0 6px rgba(226,177,76,.55))}
+  .journey-track .ms{flex:0 0 clamp(300px,26vw,380px);height:100%;padding:0;position:relative}
+  .journey-track .ms::before,.journey-track .ms::after{content:none}
+  .ms .dot{position:absolute;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 0 6px rgba(226,177,76,.14);cursor:pointer;z-index:2;
+    transition:transform .35s var(--ease-out),box-shadow .35s}
+  .ms:nth-child(even) .dot{top:35%}
+  .ms:nth-child(odd) .dot{top:65%}
+  .ms .dot:hover{transform:translate(-50%,-50%) scale(1.4)}
+  .ms .txt{position:absolute;left:7%;right:7%;text-align:center;opacity:.45;
+    transition:opacity .45s,transform .45s var(--ease-out)}
+  .ms:nth-child(even) .txt{top:calc(35% + 32px)}
+  .ms:nth-child(odd) .txt{bottom:calc(35% + 32px)}
+  .ms .txt .yr{font-size:clamp(1.9rem,2.8vw,2.6rem)}
+  .ms .txt h3{margin:10px 0 8px}
+  .ms .txt p{max-width:36ch;margin-inline:auto;font-size:.93rem}
+  .ms:hover .txt{opacity:1}
+  .ms.on .txt{opacity:1;transform:scale(1.03)}
+  .ms.on .yr{color:var(--gold)}
+  .ms.on .dot{transform:translate(-50%,-50%) scale(1.55);
+    box-shadow:0 0 0 10px rgba(226,177,76,.18),0 0 26px rgba(226,177,76,.65)}
+}
+@media(max-width:900px){
+  .ms .dot{display:none}
+  .ms .txt .yr{margin-bottom:0}
+}
