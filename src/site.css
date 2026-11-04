@@ -902,7 +902,7 @@ picture{display:contents}
 @keyframes znext{0%,100%{stroke:rgba(226,177,76,.75)}50%{stroke:#F4D88A}}
 .zip-tip{text-align:center;font-size:.88rem;color:rgba(248,241,230,.55);margin-top:14px}
 .g-pop{position:relative}
-.g-burst{position:absolute;left:50%;top:50px;width:0;height:0;pointer-events:none;z-index:3}
+.g-burst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:3}
 .g-burst i{position:absolute;left:0;top:0;background:var(--c);animation:gburst 2.6s var(--ease-out) forwards;opacity:0}
 @keyframes gburst{0%{transform:translate(-50%,-50%);opacity:1}55%{opacity:1}100%{transform:translate(calc(var(--dx) - 50%),calc(var(--dy) + 30px - 50%)) rotate(var(--rot));opacity:0}}
 @media (max-width:640px){

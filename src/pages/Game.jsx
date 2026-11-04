@@ -6,7 +6,7 @@ import useTitle from '../lib/useTitle'
 const CODE = '4567'
 const N = 6
 const CELL = 100 // SVG units per cell
-const REDIRECT_MS = 4600
+const REDIRECT_MS = 3400
 
 const CONFETTI_COLORS = ['#E2B14C', '#F4D88A', '#F8F1E6', '#E8456B', '#B88A2E']
 
@@ -195,6 +195,7 @@ export default function Game() {
   }
 
   const onDown = (e) => {
+    if (stage !== 'play') return
     e.preventDefault()
     ensureAudio()
     const id = cellFromEvent(e)
@@ -205,7 +206,7 @@ export default function Game() {
   }
 
   const onMove = (e) => {
-    if (!dragging.current) return
+    if (stage !== 'play' || !dragging.current) return
     const id = cellFromEvent(e)
     if (id >= 0) steer(id)
   }
@@ -340,7 +341,7 @@ export default function Game() {
           </div>
         )}
 
-        {stage === 'play' && (
+        {(stage === 'play' || stage === 'done') && (
           <div className="zip-wrap">
             <div className="zip-hud">
               <div>
@@ -350,10 +351,15 @@ export default function Game() {
                 </b>
               </div>
               <div className="zip-btns">
-                <button className="zbtn" type="button" onClick={undo} disabled={path.length <= lockedLenOf(path)}>
+                <button
+                  className="zbtn"
+                  type="button"
+                  onClick={undo}
+                  disabled={stage !== 'play' || path.length <= lockedLenOf(path)}
+                >
                   Undo
                 </button>
-                <button className="zbtn" type="button" onClick={reset} disabled={path.length < 2}>
+                <button className="zbtn" type="button" onClick={reset} disabled={stage !== 'play' || path.length < 2}>
                   Restart
                 </button>
               </div>
@@ -409,34 +415,15 @@ export default function Game() {
                   )
                 })}
               </svg>
+              {stage === 'done' && (
+                <div className="g-burst" aria-hidden="true">
+                  {confetti.map((p) => (
+                    <i key={p.id} style={p.style} />
+                  ))}
+                </div>
+              )}
             </div>
             <p className="zip-tip">Connect the stars in order · reaching a star locks the line so far</p>
-          </div>
-        )}
-
-        {stage === 'done' && (
-          <div className="g-card g-pop">
-            <div className="g-burst" aria-hidden="true">
-              {confetti.map((p) => (
-                <i key={p.id} style={p.style} />
-              ))}
-            </div>
-            <Kicker>Path complete</Kicker>
-            <h1>
-              <em>Star of the show!</em>
-            </h1>
-            <p>Raising the curtain on the show…</p>
-            <div className="g-row">
-              <button
-                className="btn btn--ghost"
-                type="button"
-                onClick={() => {
-                  navigate('/')
-                }}
-              >
-                Enter now
-              </button>
-            </div>
           </div>
         )}
       </div>
