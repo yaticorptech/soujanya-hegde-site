@@ -874,16 +874,28 @@ picture{display:contents}
 .g-err .g-row input{border-color:var(--rose);animation:gshake .4s}
 @keyframes gshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .g-msg{margin-top:14px;color:var(--rose-2);font-size:.95rem}
-.g-play{max-width:760px;margin:0 auto}
-.g-hud{display:flex;align-items:center;gap:18px;margin-bottom:16px}
-.g-hud>div{display:grid;line-height:1.15;text-align:center;min-width:64px}
-.g-hud small{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(248,241,230,.5)}
-.g-hud b{font-family:var(--display);font-size:1.5rem;color:var(--gold-2);font-variant-numeric:tabular-nums}
-.g-timebar{flex:1;height:6px;border-radius:999px;background:rgba(248,241,230,.12);overflow:hidden}
-.g-timebar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-3),var(--gold-2));transition:width .1s linear}
-.g-arena{position:relative;height:min(58vh,460px);border:1px solid rgba(226,177,76,.25);border-radius:22px;background:radial-gradient(120% 95% at 50% 0%,rgba(59,29,71,.7),rgba(26,12,31,.95));overflow:hidden;touch-action:manipulation}
-.g-star{position:absolute;width:64px;height:64px;transform:translate(-50%,-50%);display:grid;place-items:center;font-size:2.1rem;color:var(--velvet);background:radial-gradient(circle at 35% 30%,var(--gold-2),var(--gold) 55%,var(--gold-3));border-radius:50%;box-shadow:0 0 30px rgba(226,177,76,.55);user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
-.g-star:active{transform:translate(-50%,-50%) scale(.88)}
+.zip-wrap{max-width:480px;margin:0 auto}
+.zip-hud{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.zip-hud>div{display:grid;line-height:1.15;text-align:center}
+.zip-hud small{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(248,241,230,.5)}
+.zip-hud b{font-family:var(--display);font-size:1.35rem;color:var(--gold-2);font-variant-numeric:tabular-nums}
+.zip-btns{display:flex;gap:10px}
+.zbtn{padding:10px 18px;border-radius:999px;border:1px solid rgba(226,177,76,.4);color:var(--gold-2);font-weight:600;font-size:.92rem;transition:border-color .25s,background .25s,opacity .25s}
+.zbtn:hover{border-color:var(--gold);background:rgba(226,177,76,.08)}
+.zbtn:disabled{opacity:.35;cursor:default}
+.zip-board{position:relative;aspect-ratio:1;border-radius:20px;border:1px solid rgba(226,177,76,.3);background:radial-gradient(120% 95% at 50% 0%,rgba(59,29,71,.75),rgba(26,12,31,.95));overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
+.zip-board svg{display:block;width:100%;height:100%}
+.z-grid line{stroke:rgba(248,241,230,.1);stroke-width:1.5}
+.z-path{fill:none;stroke:url(#zgold);stroke-width:58;stroke-linecap:round;stroke-linejoin:round;opacity:.95}
+.z-headcap{fill:url(#zgold)}
+.z-wall{stroke:var(--ivory);stroke-width:11;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(0,0,0,.45))}
+.z-dot circle{fill:var(--plum);stroke:rgba(226,177,76,.75);stroke-width:3}
+.z-dot text{font-family:var(--body);font-size:30px;font-weight:700;fill:var(--gold-2);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.z-dot.on circle{fill:var(--gold);stroke:var(--gold-2)}
+.z-dot.on text{fill:var(--velvet)}
+.z-dot.next circle{animation:znext 1.6s ease-in-out infinite}
+@keyframes znext{0%,100%{stroke:rgba(226,177,76,.75)}50%{stroke:#F4D88A}}
+.zip-tip{text-align:center;font-size:.88rem;color:rgba(248,241,230,.55);margin-top:14px}
 .g-score{font-family:var(--display);font-size:clamp(4.5rem,15vw,7.5rem);line-height:1;color:var(--gold-2);margin:6px 0 2px}
 @media (max-width:640px){
   .game{min-height:68vh}
@@ -892,8 +904,6 @@ picture{display:contents}
   .g-row{flex-direction:column;gap:14px}
   .g-row input{width:min(100%,280px);font-size:1.35rem}
   .g-row .btn{width:min(100%,280px);justify-content:center}
-  .g-hud{gap:12px}
-  .g-hud b{font-size:1.3rem}
-  .g-arena{height:min(58vh,480px)}
-  .g-star{width:76px;height:76px;font-size:2.5rem}
+  .zip-hud b{font-size:1.2rem}
+  .zbtn{padding:9px 14px;font-size:.88rem}
 }
