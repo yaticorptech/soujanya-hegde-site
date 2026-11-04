@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Kicker } from '../components/ui'
 import useTitle from '../lib/useTitle'
@@ -6,7 +6,9 @@ import useTitle from '../lib/useTitle'
 const CODE = '1234'
 const N = 6
 const CELL = 100 // SVG units per cell
-const REDIRECT_MS = 2400
+const REDIRECT_MS = 3400
+
+const CONFETTI_COLORS = ['#E2B14C', '#F4D88A', '#F8F1E6', '#E8456B', '#B88A2E']
 
 /* Zip-style puzzle. Cells are row*6+col. A hand-verified solution exists that
    visits the dots in order, fills all 36 cells and crosses no wall. */
@@ -155,6 +157,28 @@ export default function Game() {
   const visited = dotsVisited(path)
   const head = path[path.length - 1]
 
+  const confetti = useMemo(
+    () =>
+      Array.from({ length: 70 }, (_, i) => {
+        const a = Math.random() * Math.PI * 2
+        const d = 70 + Math.random() * 160
+        return {
+          id: i,
+          style: {
+            '--dx': `${(Math.cos(a) * d).toFixed(0)}px`,
+            '--dy': `${(Math.sin(a) * d - 40).toFixed(0)}px`,
+            '--rot': `${(90 + Math.random() * 540).toFixed(0)}deg`,
+            '--c': CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+            width: `${7 + Math.random() * 6}px`,
+            height: `${7 + Math.random() * 6}px`,
+            borderRadius: i % 3 ? '2px' : '50%',
+            animationDelay: `${(Math.random() * 0.25).toFixed(2)}s`,
+          },
+        }
+      }),
+    [],
+  )
+
   return (
     <section className="sec game">
       <div className="wrap">
@@ -290,9 +314,16 @@ export default function Game() {
         )}
 
         {stage === 'done' && (
-          <div className="g-card">
+          <div className="g-card g-pop">
+            <div className="g-burst" aria-hidden="true">
+              {confetti.map((p) => (
+                <i key={p.id} style={p.style} />
+              ))}
+            </div>
+            <div className="g-face">
+              <img src="/imgw/hero-pink-480.webp" alt="Soujanya Hegde" />
+            </div>
             <Kicker>Path complete</Kicker>
-            <div className="g-score">✦</div>
             <h1>
               <em>Star of the show!</em>
             </h1>
