@@ -416,11 +416,17 @@ export default function Game() {
                 })}
               </svg>
               {stage === 'done' && (
-                <div className="g-burst" aria-hidden="true">
-                  {confetti.map((p) => (
-                    <i key={p.id} style={p.style} />
-                  ))}
-                </div>
+                <>
+                  <div className="g-burst" aria-hidden="true">
+                    {confetti.map((p) => (
+                      <i key={p.id} style={p.style} />
+                    ))}
+                  </div>
+                  <div className="g-welcome">
+                    <span>Welcome to</span>
+                    <b>hegdesoujanya.com</b>
+                  </div>
+                </>
               )}
             </div>
             <p className="zip-tip">Connect the stars in order · reaching a star locks the line so far</p>
