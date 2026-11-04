@@ -15,11 +15,6 @@ const RIBBON = [
   'Founder, SparkTree Foundation', 'Chatroom with Soujanya', 'Bharatanatyam & Yakshagana', 'Influencer',
 ]
 
-const BRANDS = [
-  'JCI India', 'Lions International', 'BNI', 'Bharatgas', 'JK Cement', 'Times Group', 'ACME Group · Dubai',
-  'Rotaract', 'Cycle Pure', 'PRCI', 'Mrs India Worldwide',
-]
-
 const REEL = [
   'hero-saree', 'solo-021', 'couple-32', 'pageant-16', 'solo-073', 'award-stage',
   'couple-12', 'solo-067', 'lions-podium', 'pageant-50', 'solo-100', 'dubai-03',
@@ -232,18 +227,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ---------- trusted by ---------- */}
-      <div className="brands">
-        <div className="wrap">
-          <div className="kicker bk">The stages she's trusted on</div>
-        </div>
-        <div className="track" aria-hidden="true">
-          {[...BRANDS, ...BRANDS].map((b, i) => (
-            <span key={i}>{b}</span>
-          ))}
-        </div>
-      </div>
 
       {/* ---------- signature moments reel ---------- */}
       <div className="gal-strips" style={{ margin: 'clamp(60px,8vw,100px) 0 0' }} data-skewv="">
