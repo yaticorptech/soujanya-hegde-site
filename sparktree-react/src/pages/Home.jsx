@@ -129,20 +129,6 @@ export default function Home() {
               </a>
               <a className="btn btn--ghost" href="#workshops">Explore workshops</a>
             </Reveal>
-            <Reveal className="chips">
-              <span className="chip">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v6m0 8v6M2 12h6m8 0h6" /></svg>
-                Needs analysis first
-              </span>
-              <span className="chip">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 10h18" /></svg>
-                1-day onsite or 2 half-day virtual
-              </span>
-              <span className="chip">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="8" r="3.5" /><path d="M2 20a7 7 0 0 1 14 0M17 5a3.5 3.5 0 0 1 0 7M22 20a7 7 0 0 0-5-6.7" /></svg>
-                Ideal batch 16–24
-              </span>
-            </Reveal>
           </div>
           <Reveal className="hero-photo">
             <div className="frame" aria-hidden="true"></div>
