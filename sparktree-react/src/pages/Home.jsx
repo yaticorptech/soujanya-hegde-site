@@ -147,8 +147,15 @@ export default function Home() {
           <Reveal className="hero-photo">
             <div className="frame" aria-hidden="true"></div>
             <figure>
-              <img src="/img/kadaba-05.jpg" alt="Soujanya Hegde leading a SparkTree workshop" />
+              <img src="/img/madikeri-ps-01.jpg" alt="Soujanya Hegde laughing with a team during the cup-tower challenge" />
             </figure>
+            <figure className="float" aria-hidden="true">
+              <img src="/img/bootcamp-01.jpg" alt="" />
+            </figure>
+            <div className="stat">
+              <b>100+</b>
+              <small>teams trained</small>
+            </div>
             <div className="badge">
               <small>Since day one</small>
               Teach · Train · Transform
