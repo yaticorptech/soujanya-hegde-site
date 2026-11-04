@@ -49,7 +49,7 @@ export default function Game() {
 
   useEffect(() => {
     if (stage !== 'play') return
-    if (path.length === N * N && path[path.length - 1] === LAST_DOT) setStage('done')
+    if (path[path.length - 1] === LAST_DOT) setStage('done')
   }, [stage, path])
 
   useEffect(() => {
@@ -77,11 +77,7 @@ export default function Game() {
     if (cur.includes(id)) return false
     if (WALLSET.has(edgeKey(last, id))) return false
     const d = DOTMAP[id]
-    if (d) {
-      if (d !== dotsVisited(cur) + 1) return false
-      // the final dot is the finish line — only enterable as the 36th cell
-      if (id === LAST_DOT && cur.length !== N * N - 1) return false
-    }
+    if (d && d !== dotsVisited(cur) + 1) return false
     return true
   }
 
@@ -201,8 +197,8 @@ export default function Game() {
               Connect the <em>stars.</em>
             </h1>
             <p>
-              Draw one golden line from <strong>1</strong> to <strong>{DOTS.length}</strong>, touching the numbers in
-              order and filling <strong>every square</strong>. Walls block the way. Drag to draw, drag back to erase.
+              Draw one continuous golden line from <strong>1</strong> to <strong>{DOTS.length}</strong>, connecting the
+              numbers in order. Walls block the way. Drag to draw, drag back to erase.
             </p>
             <div className="g-row">
               <button
@@ -222,12 +218,6 @@ export default function Game() {
         {stage === 'play' && (
           <div className="zip-wrap">
             <div className="zip-hud">
-              <div>
-                <small>Filled</small>
-                <b>
-                  {path.length}/{N * N}
-                </b>
-              </div>
               <div>
                 <small>Stars</small>
                 <b>
@@ -295,7 +285,7 @@ export default function Game() {
                 })}
               </svg>
             </div>
-            <p className="zip-tip">Drag from star 1 · hit the stars in order · fill every square</p>
+            <p className="zip-tip">Drag from star 1 · connect the stars in order · one continuous line</p>
           </div>
         )}
 
