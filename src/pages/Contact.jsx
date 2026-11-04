@@ -83,7 +83,7 @@ export default function Contact() {
           <div className="row">
             <div className="field">
               <label htmlFor="fName">Your name</label>
-              <input id="fName" required placeholder="Priya Shenoy" value={form.name} onChange={set('name')} />
+              <input id="fName" required placeholder="Your name" value={form.name} onChange={set('name')} />
             </div>
             <div className="field">
               <label htmlFor="fPhone">Phone</label>
