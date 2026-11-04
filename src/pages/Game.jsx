@@ -71,11 +71,11 @@ export default function Game() {
             <p>Enter the secret code to step behind the curtain.</p>
             <div className="g-row">
               <input
-                type="password"
+                type="text"
                 inputMode="numeric"
                 autoComplete="off"
                 maxLength={8}
-                placeholder="••••"
+                placeholder="1234"
                 aria-label="Secret code"
                 autoFocus
                 value={code}
