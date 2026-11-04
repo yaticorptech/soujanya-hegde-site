@@ -248,15 +248,11 @@ export default function Game() {
   )
 
   return (
-    <section className={`sec game ${stage === 'lock' ? 'g-lockbg' : ''}`}>
-      {stage === 'lock' && (
-        <div className="g-bg" aria-hidden="true">
-          <img src="/img/bni-poster.jpg" alt="" />
-        </div>
-      )}
+    <section className="sec game">
       <div className="wrap">
         {stage === 'lock' && (
-          <form className={`g-card ${err ? 'g-err' : ''}`} onSubmit={unlock}>
+          <form className={`g-card g-lock2 ${err ? 'g-err' : ''}`} onSubmit={unlock}>
+            <img className="g-poster" src="/img/bni-poster.jpg" alt="BNI Inspire — Feature Presentation by Soujanya Hegde" />
             <div className="g-row" style={{ marginTop: 0 }}>
               <input
                 type="text"

@@ -874,14 +874,11 @@ picture{display:contents}
 .g-err .g-row input{border-color:var(--rose);animation:gshake .4s}
 @keyframes gshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .g-msg{margin-top:14px;color:var(--rose-2);font-size:.95rem}
-.g-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
-.g-bg img{width:100%;height:100%;object-fit:cover;object-position:40% 15%}
-.g-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,12,31,.45) 0%,rgba(26,12,31,.7) 50%,rgba(26,12,31,.95) 100%)}
-.game .wrap{position:relative;z-index:1}
-.g-lockbg .g-card{max-width:380px;background:rgba(26,12,31,.5);border:1px solid rgba(226,177,76,.25);border-radius:26px;padding:26px 22px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 30px 80px rgba(0,0,0,.55)}
-.g-lockbg .g-row{flex-direction:column;gap:14px}
-.g-lockbg .g-row input{width:min(100%,300px);font-size:1.35rem}
-.g-lockbg .g-row .btn{width:min(100%,300px);justify-content:center}
+.g-lock2{max-width:420px}
+.g-poster{display:block;width:100%;max-height:62vh;object-fit:contain;margin:0 auto 24px;border-radius:20px;border:1px solid rgba(226,177,76,.35);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.g-lock2 .g-row{flex-direction:column;gap:14px}
+.g-lock2 .g-row input{width:min(100%,300px);font-size:1.35rem}
+.g-lock2 .g-row .btn{width:min(100%,300px);justify-content:center}
 .zip-wrap{max-width:480px;margin:0 auto}
 .zip-hud{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
 .zip-hud>div{display:grid;line-height:1.15;text-align:center}
@@ -914,7 +911,6 @@ picture{display:contents}
 @media (max-width:640px){
   .game{min-height:68vh}
   .g-card{padding:0 4px}
-  .g-lockbg .g-card{padding:22px 16px}
   .g-emblem{width:72px;height:72px;font-size:1.7rem;margin-bottom:16px}
   .g-row{flex-direction:column;gap:14px}
   .g-row input{width:min(100%,280px);font-size:1.35rem}
