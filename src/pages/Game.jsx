@@ -6,7 +6,7 @@ import useTitle from '../lib/useTitle'
 const CODE = '1234'
 const N = 6
 const CELL = 100 // SVG units per cell
-const REDIRECT_MS = 3400
+const REDIRECT_MS = 4600
 
 const CONFETTI_COLORS = ['#E2B14C', '#F4D88A', '#F8F1E6', '#E8456B', '#B88A2E']
 
@@ -172,7 +172,7 @@ export default function Game() {
             width: `${7 + Math.random() * 6}px`,
             height: `${7 + Math.random() * 6}px`,
             borderRadius: i % 3 ? '2px' : '50%',
-            animationDelay: `${(Math.random() * 0.25).toFixed(2)}s`,
+            animationDelay: `${(Math.random() * 0.6).toFixed(2)}s`,
           },
         }
       }),
