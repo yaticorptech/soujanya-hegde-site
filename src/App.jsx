@@ -19,7 +19,7 @@ const NotFound = lazy(() => import('./pages/NotFound'))
 
 const PAGES = {
   '/': 'home', '/about': 'about', '/journey': 'journey',   '/international': 'international', '/awards': 'awards', '/sparktree': 'sparktree',
-  '/chatroom': 'chatroom', '/gallery': 'gallery', '/contact': 'contact',
+  '/chatroom': 'chatroom', '/gallery': 'gallery', '/contact': 'contact', '/game': 'game',
 }
 
 /** Golden spotlight that follows the cursor (fine pointers only). */
