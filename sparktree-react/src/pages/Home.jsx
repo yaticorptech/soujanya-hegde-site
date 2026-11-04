@@ -112,8 +112,11 @@ export default function Home() {
   return (
     <>
       <header className="hero" id="top">
-        <div className="wrap hero-grid">
-          <div>
+        <i className="sp s1" aria-hidden="true">✦</i>
+        <i className="sp s2" aria-hidden="true">✦</i>
+        <i className="sp s3" aria-hidden="true">✦</i>
+        <div className="wrap">
+          <div className="hero-center">
             <Reveal className="kicker">Soft skills · Public speaking · Leadership</Reveal>
             <Reveal as="h1">
               Custom soft-skills programmes, <em>built on <span className="spark-word">your needs.</span></em>
@@ -129,20 +132,10 @@ export default function Home() {
               </a>
               <a className="btn btn--ghost" href="#workshops">Explore workshops</a>
             </Reveal>
+            <Reveal as="p" className="hero-trust">
+              Trusted by Lions Clubs <i>✦</i> campuses <i>✦</i> co-operatives <i>✦</i> corporates across Karnataka
+            </Reveal>
           </div>
-          <Reveal className="hero-bento">
-            <figure className="b-main">
-              <img src="/img/sparktree-13.jpg" alt="Soujanya Hegde and Preetham Ponnappa, SparkTree lead trainers" />
-            </figure>
-            <figure className="b-side">
-              <img src="/img/bootcamp-01.jpg" alt="Kids giving thumbs up at the confidence bootcamp" />
-            </figure>
-            <div className="b-brand">
-              <b>100+</b>
-              <span>teams &amp; batches trained</span>
-              <small>Teach · Train · Transform</small>
-            </div>
-          </Reveal>
         </div>
       </header>
 
