@@ -248,7 +248,12 @@ export default function Game() {
   )
 
   return (
-    <section className="sec game">
+    <section className={`sec game ${stage === 'lock' ? 'g-lockbg' : ''}`}>
+      {stage === 'lock' && (
+        <div className="g-bg" aria-hidden="true">
+          <img src="/img/bni-poster.jpg" alt="" />
+        </div>
+      )}
       <div className="wrap">
         {stage === 'lock' && (
           <form className={`g-card ${err ? 'g-err' : ''}`} onSubmit={unlock}>
