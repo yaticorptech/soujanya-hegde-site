@@ -902,12 +902,9 @@ picture{display:contents}
 @keyframes znext{0%,100%{stroke:rgba(226,177,76,.75)}50%{stroke:#F4D88A}}
 .zip-tip{text-align:center;font-size:.88rem;color:rgba(248,241,230,.55);margin-top:14px}
 .g-pop{position:relative}
-.g-burst{position:absolute;left:50%;top:80px;width:0;height:0;pointer-events:none;z-index:3}
+.g-burst{position:absolute;left:50%;top:50px;width:0;height:0;pointer-events:none;z-index:3}
 .g-burst i{position:absolute;left:0;top:0;background:var(--c);animation:gburst 2.6s var(--ease-out) forwards;opacity:0}
 @keyframes gburst{0%{transform:translate(-50%,-50%);opacity:1}55%{opacity:1}100%{transform:translate(calc(var(--dx) - 50%),calc(var(--dy) + 30px - 50%)) rotate(var(--rot));opacity:0}}
-.g-face{width:160px;height:160px;margin:0 auto 22px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);box-shadow:0 0 0 6px rgba(226,177,76,.15),0 18px 50px rgba(0,0,0,.5),0 0 44px rgba(226,177,76,.4);animation:gface .85s var(--ease-out) both}
-.g-face img{width:100%;height:100%;object-fit:cover;object-position:50% 8%}
-@keyframes gface{0%{transform:scale(.2);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
 @media (max-width:640px){
   .game{min-height:68vh}
   .g-card{padding:0 4px}

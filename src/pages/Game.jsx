@@ -389,9 +389,6 @@ export default function Game() {
                 <i key={p.id} style={p.style} />
               ))}
             </div>
-            <div className="g-face">
-              <img src="/imgw/hero-pink-480.webp" alt="Soujanya Hegde" />
-            </div>
             <Kicker>Path complete</Kicker>
             <h1>
               <em>Star of the show!</em>
