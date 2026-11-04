@@ -1,22 +1,23 @@
 import { useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight, H2 } from '../components/ui'
 import { glideTo } from '../lib/smooth'
+import Pic from '../components/Pic'
 import useTitle from '../lib/useTitle'
 
 const MILESTONES = [
-  { yr: '6 mo.', title: 'First spotlight', text: 'Wins a Healthy Baby contest — her very first appearance on a stage. Over 600 prizes in dance, singing, elocution, fancy dress, rangoli and Yakshagana follow through school.' },
+  { yr: '6 mo.', title: 'First spotlight', text: 'Wins a Healthy Baby contest — her very first appearance on a stage. Over 600 prizes in dance, singing, elocution, fancy dress, rangoli and Yakshagana follow through school.', img: '/img/solo-026.jpg', alt: 'Soujanya on a festival stage with a baby in a tiger costume' },
   { yr: '1994', title: 'Bala Prathibha Award', text: 'State-level recognition for a child performer; she serves as Vice-President of Bala Prathibha the same year, at St Agnes, Mangaluru.' },
-  { yr: '1996', title: 'Yakshagana honours', text: 'Prathibha Puraskara from Shri Yakshanugraha Kala Sampada for Thenku Thittu Yakshagana, and the Most Talented Youth award from Sandesha Prathistana.' },
-  { yr: '2000', title: 'Teen of the Year', text: <>National Youth Talent Hunt: winner of the South Indian zonals, runner-up at the nationals. The same year she receives the Rashtrapati Award for Bharat Scouts &amp; Guides from President K. R. Narayanan, and wins Boogie Woogie's state round twice over.</>, big: true },
+  { yr: '1996', title: 'Yakshagana honours', text: 'Prathibha Puraskara from Shri Yakshanugraha Kala Sampada for Thenku Thittu Yakshagana, and the Most Talented Youth award from Sandesha Prathistana.', img: '/img/solo-082.jpg', alt: 'On a festival stage in a red saree' },
+  { yr: '2000', title: 'Teen of the Year', text: <>National Youth Talent Hunt: winner of the South Indian zonals, runner-up at the nationals. The same year she receives the Rashtrapati Award for Bharat Scouts &amp; Guides from President K. R. Narayanan, and wins Boogie Woogie's state round twice over.</>, img: '/img/audience.jpg', alt: 'A full house watching the stage', big: true },
   { yr: '2001', title: 'Miss Mangalore Jaycee Queen', text: <>Crowned at the city pageant, then Miss Karavali Udupi in 2002. Makes her film debut the same year in the Kannada feature <em>Mayajinke</em>.</>, img: '/img/stage-point.jpg', alt: 'Soujanya on stage' },
-  { yr: '2006', title: 'Law, then management', text: 'Graduates in law from SDM Law College, Mangaluru — a national moot-court semi-finalist along the way — and adds an MBA diploma from ICFAI University in 2010.' },
-  { yr: 'Abuja', title: 'The Nigeria decade', text: 'Moves to Abuja after marriage. Founds and runs Nrityalaya, a dance institute, serves as Cultural Secretary of the Indian Cultural Association, and receives a certificate of appreciation from the High Commissioner of India in 2012.', big: true },
+  { yr: '2006', title: 'Law, then management', text: 'Graduates in law from SDM Law College, Mangaluru — a national moot-court semi-finalist along the way — and adds an MBA diploma from ICFAI University in 2010.', img: '/img/solo-005.jpg', alt: 'Boardroom-ready professional portrait' },
+  { yr: 'Abuja', title: 'The Nigeria decade', text: 'Moves to Abuja after marriage. Founds and runs Nrityalaya, a dance institute, serves as Cultural Secretary of the Indian Cultural Association, and receives a certificate of appreciation from the High Commissioner of India in 2012.', img: '/img/solo-010.jpg', alt: 'Dancing in traditional dress on stage', big: true },
   { yr: '2016', title: 'Home to Mangaluru', text: <>Stars in the Tulu film <em>Bollilu</em> and opens Let'Z Party — the city's complete party store, and the first of the ventures she builds back home.</>, img: '/img/award-stage.jpg', alt: 'Soujanya receiving an award on stage' },
-  { yr: '2017', title: 'Mrs India Worldwide', text: <>From 8,000 entries to the top 60, then Vietnam for the semi-finals and the grand finale at Kingdom of Dreams, Gurugram. Finishes sixth and is crowned <strong>Mrs Popular</strong> at Haut Monde Mrs India Worldwide.</>, big: true },
+  { yr: '2017', title: 'Mrs India Worldwide', text: <>From 8,000 entries to the top 60, then Vietnam for the semi-finals and the grand finale at Kingdom of Dreams, Gurugram. Finishes sixth and is crowned <strong>Mrs Popular</strong> at Haut Monde Mrs India Worldwide.</>, img: '/img/pageant-16.jpg', alt: 'Wearing the Mrs Popular sash among golden thrones', big: true },
   { yr: '2018', title: 'Mrs Mangalore, her own pageant', text: "As President of JCI Mangalore Lalbagh she organises coastal Karnataka's first pageant for married women — mentoring every contestant on the way to the crown.", img: '/img/jci-presidential.jpg', alt: 'Soujanya at a JCI presidential event' },
-  { yr: '2019', title: 'Deyi Baidethi', text: <>Returns to the screen in the acclaimed Tulu film <em>Deyi Baidethi</em>, playing Kaajal Kunder and Seetha Kote.</> },
+  { yr: '2019', title: 'Deyi Baidethi', text: <>Returns to the screen in the acclaimed Tulu film <em>Deyi Baidethi</em>, playing Kaajal Kunder and Seetha Kote.</>, img: '/img/solo-030.jpg', alt: 'Hosting the Coastal Film Awards' },
   { yr: '2024', title: 'SparkTree Foundation', text: 'Co-founds a soft-skills and public-speaking training company. Campus to Corporate, Step Up and Mic Magic programmes reach students, Lions leaders and corporate teams.', img: '/img/corp-05.jpg', alt: 'SparkTree workshop in session' },
-  { yr: '2025', title: 'Chatroom with Soujanya', text: 'Launches a YouTube talk show with the performers, creators and film stars of Tulunadu — the Shilpa Shetty episode alone crosses 78,000 views.' },
+  { yr: '2025', title: 'Chatroom with Soujanya', text: 'Launches a YouTube talk show with the performers, creators and film stars of Tulunadu — the Shilpa Shetty episode alone crosses 78,000 views.', img: '/img/chatroom-banner.jpg', alt: 'Chatroom with Soujanya banner' },
   { yr: '2026', title: 'KidFest — because every kid is a star', text: 'Two days, thirteen competitions, a flea market and stage performances at Palemar Convention Centre, Mangaluru, on 16 & 17 May — organised with SparkTree Foundation.', img: '/img/kidfest-banner.jpg', alt: 'KidFest 2026 banner', big: true },
   { yr: '…', title: 'Next act', text: 'Your event.', tail: true },
 ]
@@ -143,7 +144,7 @@ export default function Journey() {
               <p>{ms.text}</p>
               {ms.img && (
                 <figure>
-                  <img src={ms.img} alt={ms.alt} loading="lazy" decoding="async" />
+                  <Pic src={ms.img} alt={ms.alt} sizes="(max-width: 900px) 420px, 480px" />
                 </figure>
               )}
             </article>
