@@ -923,7 +923,7 @@ picture{display:contents}
 body[data-page="game"] .nav,
 body[data-page="game"] .foot,
 body[data-page="game"] .fab{display:none}
-body[data-page="game"] .game{padding:28px 0 48px}
+body[data-page="game"] .game{padding:20px 0 48px;min-height:0;place-items:start center}
 .g-head{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 26px;font-family:var(--display);font-size:1.45rem;letter-spacing:-.01em}
 .g-head img{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold-dim);object-fit:cover}
 .g-head span em{font-style:italic;color:var(--gold)}
