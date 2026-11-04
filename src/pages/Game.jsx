@@ -293,6 +293,38 @@ export default function Game() {
               Draw one continuous golden line from <strong>1</strong> to <strong>{DOTS.length}</strong>, connecting the
               numbers in order. Walls block the way. Drag to draw, drag back to erase.
             </p>
+            <div className="g-demo" aria-hidden="true">
+              <svg viewBox="0 0 400 300">
+                <defs>
+                  <linearGradient id="gdemo" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#F4D88A" />
+                    <stop offset="0.55" stopColor="#E2B14C" />
+                    <stop offset="1" stopColor="#B88A2E" />
+                  </linearGradient>
+                </defs>
+                <g className="gd-grid">
+                  <line x1="100" y1="0" x2="100" y2="300" />
+                  <line x1="200" y1="0" x2="200" y2="300" />
+                  <line x1="300" y1="0" x2="300" y2="300" />
+                  <line x1="0" y1="100" x2="400" y2="100" />
+                  <line x1="0" y1="200" x2="400" y2="200" />
+                </g>
+                <path className="gd-line" d="M50 50 H250 V150 H350 V250" pathLength="100" />
+                <line className="gd-wall" x1="200" y1="110" x2="200" y2="190" />
+                <g className="gd-dot gd-1">
+                  <circle cx="50" cy="50" r="22" />
+                  <text x="50" y="50">1</text>
+                </g>
+                <g className="gd-dot gd-2">
+                  <circle cx="250" cy="150" r="22" />
+                  <text x="250" y="150">2</text>
+                </g>
+                <g className="gd-dot gd-3">
+                  <circle cx="350" cy="250" r="22" />
+                  <text x="350" y="250">3</text>
+                </g>
+              </svg>
+            </div>
             <div className="g-row">
               <button
                 className="btn btn--gold"

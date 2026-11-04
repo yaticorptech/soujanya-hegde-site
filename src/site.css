@@ -925,3 +925,16 @@ body[data-page="game"] .game{padding:14px 0 48px;min-height:0;place-items:start 
 .g-head{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 26px;font-family:var(--display);font-size:1.45rem;letter-spacing:-.01em}
 .g-head img{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold-dim);object-fit:cover}
 .g-head span em{font-style:italic;color:var(--gold)}
+.g-demo{max-width:300px;margin:26px auto 0;border:1px solid rgba(226,177,76,.25);border-radius:16px;background:radial-gradient(120% 95% at 50% 0%,rgba(59,29,71,.75),rgba(26,12,31,.95));overflow:hidden}
+.g-demo svg{display:block;width:100%;height:auto}
+.gd-grid line{stroke:rgba(248,241,230,.1);stroke-width:1.5}
+.gd-wall{stroke:var(--ivory);stroke-width:9;stroke-linecap:round;opacity:.9}
+.gd-line{fill:none;stroke:url(#gdemo);stroke-width:36;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100 100;animation:gddraw 4.6s ease-in-out infinite}
+@keyframes gddraw{0%{stroke-dashoffset:100;opacity:1}8%{stroke-dashoffset:100}60%{stroke-dashoffset:0}82%{stroke-dashoffset:0;opacity:1}90%{stroke-dashoffset:0;opacity:0}100%{stroke-dashoffset:100;opacity:0}}
+.gd-dot circle{fill:var(--plum);stroke:rgba(226,177,76,.55);stroke-width:3}
+.gd-dot text{font-family:var(--body);font-size:22px;font-weight:700;fill:var(--gold-2);text-anchor:middle;dominant-baseline:central}
+.gd-1 circle{stroke:#F4D88A;stroke-width:4}
+.gd-2 circle{animation:gdot2 4.6s infinite}
+.gd-3 circle{animation:gdot3 4.6s infinite}
+@keyframes gdot2{0%,36%{stroke:rgba(226,177,76,.55);stroke-width:3}42%,86%{stroke:#F4D88A;stroke-width:4}94%,100%{stroke:rgba(226,177,76,.55);stroke-width:3}}
+@keyframes gdot3{0%,56%{stroke:rgba(226,177,76,.55);stroke-width:3}62%,86%{stroke:#F4D88A;stroke-width:4}94%,100%{stroke:rgba(226,177,76,.55);stroke-width:3}}
