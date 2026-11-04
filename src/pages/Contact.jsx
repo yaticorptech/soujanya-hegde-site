@@ -4,7 +4,7 @@ import { Kicker, H2, WaIcon, YtIcon } from '../components/ui'
 import { WHATSAPP } from '../data'
 import useTitle from '../lib/useTitle'
 
-const TYPES = ['Event hosting', 'Event planning', 'Corporate training (SparkTree)', 'KidFest registration', 'Brand collaboration', 'Something else']
+const TYPES = ['Event hosting', 'Event planning', 'Corporate training (SparkTree)', "Party supplies & décor (Let'Z Party)", 'Brand collaboration', 'Something else']
 
 export default function Contact() {
   useTitle('Contact — Soujanya Hegde', 'Book Soujanya for hosting, planning or corporate training. Fast replies on WhatsApp.')
@@ -58,6 +58,13 @@ export default function Contact() {
                 <path d="M12 22V12M12 12c-4 0-7-3-7-7 4 0 7 3 7 7zm0 0c4 0 7-3 7-7-4 0-7 3-7 7z" />
               </svg>
               SparkTree Foundation
+            </a>
+            <a href="https://www.instagram.com/letzparty_decorstore/" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 3a5 5 0 0 1 5 5c0 3-2.2 5.5-5 5.5S7 11 7 8a5 5 0 0 1 5-5z" />
+                <path d="m12 13.5-1 1.8h2l-1 1.7V21" />
+              </svg>
+              Let'Z Party
             </a>
           </Reveal>
         </div>
