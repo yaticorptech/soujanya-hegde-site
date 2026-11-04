@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { ChevronLeft, ChevronRight, H2 } from '../components/ui'
-import { glideTo } from '../lib/smooth'
+import { Kicker, H2, Lead } from '../components/ui'
 import useTitle from '../lib/useTitle'
 
 const MILESTONES = [
@@ -17,145 +16,95 @@ const MILESTONES = [
   { yr: '2019', title: 'Deyi Baidethi', text: <>Returns to the screen in the acclaimed Tulu film <em>Deyi Baidethi</em>, playing Kaajal Kunder and Seetha Kote.</> },
   { yr: '2024', title: 'SparkTree Foundation', text: 'Co-founds a soft-skills and public-speaking training company. Campus to Corporate, Step Up and Mic Magic programmes reach students, Lions leaders and corporate teams.' },
   { yr: '2025', title: 'Chatroom with Soujanya', text: 'Launches a YouTube talk show with the performers, creators and film stars of Tulunadu — the Shilpa Shetty episode alone crosses 78,000 views.' },
-  { yr: '2026', title: 'KidFest — because every kid is a star', text: 'Two days, thirteen competitions, a flea market and stage performances at Palemar Convention Centre, Mangaluru, on 16 & 17 May — organised with SparkTree Foundation.' },
+  { yr: '2026', title: 'KidFest', text: 'Two days, thirteen competitions, a flea market and stage performances at Palemar Convention Centre, Mangaluru, on 16 & 17 May — organised with SparkTree Foundation.' },
   { yr: '…', title: 'Next act', text: 'Your event.' },
 ]
 
 const N = MILESTONES.length
-// zig-zag path: one point per milestone, alternating high / low
-const POINTS = MILESTONES.map((_, i) => `${i * 100 + 50},${i % 2 ? 260 : 140}`).join(' ')
+const SEG = 300 // viewBox units per milestone segment
 
-const PIN = 0.55 // page px scrolled per px of sideways travel
+// winding road: starts center-top, bends left/right through each milestone, ends center-bottom
+const PATH = (() => {
+  let d = 'M 500 0'
+  let prev = [500, 0]
+  MILESTONES.forEach((_, i) => {
+    const x = i % 2 ? 700 : 300
+    const y = (i + 0.5) * SEG
+    d += ` C ${prev[0]} ${prev[1] + SEG * 0.45}, ${x} ${y - SEG * 0.45}, ${x} ${y}`
+    prev = [x, y]
+  })
+  d += ` C ${prev[0]} ${prev[1] + SEG * 0.45}, 500 ${N * SEG - SEG * 0.45}, 500 ${N * SEG}`
+  return d
+})()
 
 export default function Journey() {
   useTitle('The Journey — Soujanya Hegde', 'From a six-month-old on stage to a stage of her own: 15 milestones.')
-  const section = useRef(null)
-  const track = useRef(null)
-  const prog = useRef(null)
+  const wrap = useRef(null)
   const lit = useRef(null)
-  const geo = useRef({ travel: 0, top: 0, span: 0, active: false })
-  const activeIdx = useRef(-1)
 
   useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    const layout = () => {
-      const sec = section.current
-      const tr = track.current
-      if (!sec || !tr) return
-      if (reduce || window.innerWidth <= 900) {
-        sec.style.height = ''
-        tr.style.transform = ''
-        geo.current.active = false
-        return
-      }
-      const travel = Math.max(0, tr.scrollWidth - window.innerWidth)
-      sec.style.height = `${Math.round(window.innerHeight + travel * PIN + 120)}px`
-      geo.current = { travel, top: sec.offsetTop, span: sec.offsetHeight - window.innerHeight, active: travel > 0 }
+    const miles = wrap.current.querySelectorAll('.rmile')
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (lit.current) lit.current.style.strokeDashoffset = '0'
+      miles.forEach((el) => el.classList.add('lit'))
+      return
     }
-
-    const onScroll = () => {
-      const { travel, top, span, active } = geo.current
-      if (!active) return
-      const p = Math.min(1, Math.max(0, (window.scrollY - top) / span))
-      track.current.style.transform = `translate3d(${(-p * travel).toFixed(1)}px,0,0)`
-      if (prog.current) prog.current.style.width = `${(p * 100).toFixed(1)}%`
-      if (lit.current) lit.current.style.strokeDashoffset = (100 - p * 100).toFixed(2)
-      const idx = Math.round(p * (N - 1))
-      if (idx !== activeIdx.current) {
-        activeIdx.current = idx
-        track.current.querySelectorAll('.ms').forEach((el, i) => el.classList.toggle('on', i === idx))
-      }
-    }
-
     let ticking = false
-    const scrollHandler = () => {
-      if (!ticking) {
-        ticking = true
-        requestAnimationFrame(() => {
-          onScroll()
-          ticking = false
-        })
-      }
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const r = wrap.current.getBoundingClientRect()
+        const p = Math.min(1, Math.max(0, (window.innerHeight * 0.55 - r.top) / r.height))
+        if (lit.current) lit.current.style.strokeDashoffset = (100 - p * 100).toFixed(2)
+        miles.forEach((el, i) => el.classList.toggle('lit', p >= (i + 0.45) / N))
+        ticking = false
+      })
     }
-    let rsz
-    const resizeHandler = () => {
-      clearTimeout(rsz)
-      rsz = setTimeout(() => {
-        layout()
-        onScroll()
-      }, 120)
-    }
-
-    layout()
     onScroll()
-    const t = setTimeout(() => {
-      layout()
-      onScroll()
-    }, 600)
-    window.addEventListener('scroll', scrollHandler, { passive: true })
-    window.addEventListener('resize', resizeHandler)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
     return () => {
-      clearTimeout(t)
-      clearTimeout(rsz)
-      window.removeEventListener('scroll', scrollHandler)
-      window.removeEventListener('resize', resizeHandler)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
     }
   }, [])
 
-  const goTo = (i) => {
-    const { top, span, active } = geo.current
-    if (!active) return
-    glideTo(top + (span / (N - 1)) * i)
-  }
-
-  const go = (dir) => {
-    const { top, span, active } = geo.current
-    if (!active) return
-    const step = span / (N - 1)
-    const cur = Math.round((window.scrollY - top) / step)
-    goTo(Math.min(N - 1, Math.max(0, cur + dir)))
-  }
-
   return (
-    <section className="journey" id="journey" ref={section}>
-      <div className="journey-sticky">
-        <div className="journey-head">
+    <section className="sec jroad">
+      <div className="wrap">
+        <div className="sec-head">
           <div>
-            <div className="kicker">The journey</div>
-            <H2 d={0}>From a six-month-old on stage to a <em>stage of her own.</em></H2>
+            <Kicker>The journey</Kicker>
+            <H2>From a six-month-old on stage to a <em>stage of her own.</em></H2>
           </div>
-          <div className="journey-ctl">
-            <div className="journey-hint">
-              <button type="button" aria-label="Previous milestone" onClick={() => go(-1)}>
-                <ChevronLeft />
-              </button>
-              <span>Scroll — the years zig-zag sideways</span>
-              <button type="button" aria-label="Next milestone" onClick={() => go(1)}>
-                <ChevronRight />
-              </button>
+          <Lead>Follow the road — it lights up in gold as you travel through the years.</Lead>
+        </div>
+      </div>
+      <div className="road-wrap" ref={wrap} style={{ '--n': N }}>
+        <svg className="road-svg" viewBox={`0 0 1000 ${N * SEG}`} preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="roadlit" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#E2B14C" />
+              <stop offset="0.55" stopColor="#C97A3B" />
+              <stop offset="1" stopColor="#E8456B" />
+            </linearGradient>
+          </defs>
+          <path className="r-base" d={PATH} />
+          <path className="r-lit" d={PATH} pathLength="100" ref={lit} stroke="url(#roadlit)" />
+          <path className="r-dash" d={PATH} />
+        </svg>
+        {MILESTONES.map((ms, i) => (
+          <div key={ms.title}>
+            <div className={`rmile ${i % 2 ? 'mr' : 'ml'}`} style={{ top: `${((i + 0.5) / N) * 100}%` }}>
+              <span>{ms.yr}</span>
             </div>
-            <div className="journey-prog" aria-hidden="true">
-              <i ref={prog}></i>
+            <div className={`rcard ${i % 2 ? 'cl' : 'cr'}`} style={{ top: `${((i + 0.5) / N) * 100}%` }}>
+              <h3>{ms.title}</h3>
+              <p>{ms.text}</p>
             </div>
           </div>
-        </div>
-        <div className="journey-track" ref={track}>
-          <svg className="jz" viewBox={`0 0 ${N * 100} 400`} preserveAspectRatio="none" aria-hidden="true">
-            <polyline className="base" points={POINTS} />
-            <polyline className="lit" points={POINTS} pathLength="100" ref={lit} />
-          </svg>
-          {MILESTONES.map((ms, i) => (
-            <article key={ms.title} className="ms">
-              <i className="dot" onClick={() => goTo(i)} title={ms.title}></i>
-              <div className="txt">
-                <div className="yr">{ms.yr}</div>
-                <h3>{ms.title}</h3>
-                <p>{ms.text}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+        ))}
       </div>
     </section>
   )
