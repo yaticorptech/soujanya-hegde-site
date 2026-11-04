@@ -12,7 +12,7 @@ const AWARDS = [
     title: 'Mrs Popular — Haut Monde Mrs India Worldwide',
     lvl: 'International · 2017 · 6th place',
     text: 'Shortlisted from 8,000 applications to the top 60, then top 50, 25 and 14 through semi-finals in Vietnam, before the grand finale at Kingdom of Dreams, Gurugram.',
-    img: '/img/pageant-16.jpg',
+    img: '/img/solo-073.jpg',
   },
   {
     icon: ico(<path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17l-6.1 3.5 1.5-6.8L2.2 9l6.9-.7z" />),
@@ -126,7 +126,7 @@ export default function Awards() {
                   <p>{a.text}</p>
                 </div>
                 <figure>
-                  <img src={a.img} alt="" loading="lazy" decoding="async" style={{ objectPosition: '50% 22%' }} />
+                  <img src={a.img} alt="" loading="lazy" decoding="async" style={{ objectPosition: '50% 24%' }} />
                 </figure>
               </Reveal>
             ) : (
