@@ -79,9 +79,12 @@ export default function Home() {
   )
   const copyRef = useRef(null)
 
-  // hero copy drifts up and fades as you scroll away, like a cinematic title card
+  // hero copy drifts up and fades as you scroll away, like a cinematic title card.
+  // Desktop only: below 960px the copy sits under the photo (not over it), so the
+  // fade would blank the text right as the user scrolls down to read it.
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const desktop = window.matchMedia('(min-width: 961px)')
     let ticking = false
     const onScroll = () => {
       if (ticking) return
@@ -89,17 +92,26 @@ export default function Home() {
       requestAnimationFrame(() => {
         const el = copyRef.current
         if (el) {
-          const y = window.scrollY
-          const fade = window.innerHeight * 0.75
-          el.style.opacity = y < fade ? String(Math.max(0, 1 - y / fade)) : '0'
-          el.style.transform = `translateY(${Math.min(y, fade) * 0.22}px)`
+          if (desktop.matches) {
+            const y = window.scrollY
+            const fade = window.innerHeight * 0.75
+            el.style.opacity = y < fade ? String(Math.max(0, 1 - y / fade)) : '0'
+            el.style.transform = `translateY(${Math.min(y, fade) * 0.22}px)`
+          } else {
+            el.style.opacity = ''
+            el.style.transform = ''
+          }
         }
         ticking = false
       })
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [])
 
   return (
