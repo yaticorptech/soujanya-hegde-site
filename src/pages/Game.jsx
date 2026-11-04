@@ -432,6 +432,12 @@ export default function Game() {
             <p className="zip-tip">Connect the stars in order · reaching a star locks the line so far</p>
           </div>
         )}
+        <p className="g-credit">
+          Developed by{' '}
+          <a href="https://yaticorp.com" target="_blank" rel="noopener">
+            Yaticorp
+          </a>
+        </p>
       </div>
     </section>
   )

@@ -101,6 +101,12 @@ export function Footer() {
             </span>
           </Link>
           <span>© 2026 SparkTree Foundation. All rights reserved.</span>
+          <span>
+            Developed by{' '}
+            <a href="https://yaticorp.com" target="_blank" rel="noopener">
+              Yaticorp
+            </a>
+          </span>
           <a href={WA} target="_blank" rel="noopener">
             WhatsApp: +91 98808 42007
           </a>

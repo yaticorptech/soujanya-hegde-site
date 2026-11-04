@@ -53,6 +53,12 @@ export default function Footer() {
           </div>
           <div className="bot">
             <span>© 2026 Mrs. Soujanya Hegde. All rights reserved.</span>
+            <span>
+              Developed by{' '}
+              <a href="https://yaticorp.com" target="_blank" rel="noopener">
+                Yaticorp
+              </a>
+            </span>
             <span>Crafted with elegance ✦</span>
           </div>
         </div>
