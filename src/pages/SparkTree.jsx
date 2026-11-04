@@ -1,6 +1,7 @@
 import Reveal from '../components/Reveal'
 import Pic from '../components/Pic'
 import { Btn, Kicker, H2 } from '../components/ui'
+import { SPARKTREE_URL } from '../data'
 import useTitle from '../lib/useTitle'
 
 const WORKSHOPS = [
@@ -121,7 +122,7 @@ export default function SparkTree() {
 
         <div className="programs" data-fx="grow">
           {PROGRAMS.map((p) => (
-            <Reveal key={p.b} as="a" className="prog" href="https://sparktreefoundation.in/events" target="_blank" rel="noopener" d={p.d || 0}>
+            <Reveal key={p.b} as="a" className="prog" href={`${SPARKTREE_URL}/events`} target="_blank" rel="noopener" d={p.d || 0}>
               <img src={p.img} alt="" loading="lazy" decoding="async" />
               <div>
                 <small>{p.small}</small>
@@ -164,7 +165,7 @@ export default function SparkTree() {
             <Btn variant="wa" href="https://wa.me/919880842007?text=Hello%2C%20I%27d%20like%20to%20know%20more%20about%20your%20corporate%20workshops.">
               Book a workshop
             </Btn>
-            <Btn variant="ghost" href="https://sparktreefoundation.in/">sparktreefoundation.in</Btn>
+            <Btn variant="ghost" href={SPARKTREE_URL}>Visit the SparkTree site</Btn>
           </div>
         </Reveal>
       </div>

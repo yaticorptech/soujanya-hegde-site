@@ -188,7 +188,7 @@ export default function About() {
               <div className="role">Co-founder &amp; Lead Trainer</div>
               <p>Soft-skills and public-speaking workshops for corporates, campuses and leaders — 100+ teams trained across Karnataka, with programmes like Campus to Corporate, Step Up and Mic Magic.</p>
               <a className="more" href={SPARKTREE_URL} target="_blank" rel="noopener">
-                sparktreefoundation.in <ArrowRight />
+                Visit SparkTree <ArrowRight />
               </a>
             </Reveal>
             <Reveal as="article" className="vent" d={2}>

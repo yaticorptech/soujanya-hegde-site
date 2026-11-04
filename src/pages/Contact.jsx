@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import Reveal from '../components/Reveal'
 import { Kicker, H2, WaIcon, YtIcon } from '../components/ui'
-import { WHATSAPP } from '../data'
+import { WHATSAPP, SPARKTREE_URL } from '../data'
 import useTitle from '../lib/useTitle'
 
 const TYPES = ['Event hosting', 'Event planning', 'Corporate training (SparkTree)', "Party supplies & décor (Let'Z Party)", 'Brand collaboration', 'Something else']
@@ -53,7 +53,7 @@ export default function Contact() {
               </svg>
               Facebook
             </a>
-            <a href="https://sparktreefoundation.in/" target="_blank" rel="noopener">
+            <a href={SPARKTREE_URL} target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22V12M12 12c-4 0-7-3-7-7 4 0 7 3 7 7zm0 0c4 0 7-3 7-7-4 0-7 3-7 7z" />
               </svg>

@@ -4,7 +4,7 @@
    ====================================================================== */
 
 export const WHATSAPP = '916361579485'
-export const SPARKTREE_URL = import.meta.env?.DEV ? 'http://localhost:5174' : 'https://sparktreefoundation.in'
+export const SPARKTREE_URL = import.meta.env?.DEV ? 'http://localhost:5174' : 'https://sparktree-foundation.vercel.app'
 
 export const WA_BOOK = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hi Soujanya, I'd like to book you for an event.")}`
 
