@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Kicker } from '../components/ui'
 import useTitle from '../lib/useTitle'
 
-const CODE = '1234'
+const CODE = '4567'
 const N = 6
 const CELL = 100 // SVG units per cell
 const REDIRECT_MS = 4600
@@ -265,7 +265,7 @@ export default function Game() {
                 inputMode="numeric"
                 autoComplete="off"
                 maxLength={8}
-                placeholder="1234"
+                placeholder="••••"
                 aria-label="Secret code"
                 autoFocus
                 value={code}
