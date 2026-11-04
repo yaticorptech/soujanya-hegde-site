@@ -257,13 +257,7 @@ export default function Game() {
       <div className="wrap">
         {stage === 'lock' && (
           <form className={`g-card ${err ? 'g-err' : ''}`} onSubmit={unlock}>
-            <div className="g-emblem" aria-hidden="true">✦</div>
-            <Kicker>Backstage entrance</Kicker>
-            <h1>
-              Members <em>only.</em>
-            </h1>
-            <p>Enter the secret code to step behind the curtain.</p>
-            <div className="g-row">
+            <div className="g-row" style={{ marginTop: 0 }}>
               <input
                 type="text"
                 inputMode="numeric"
