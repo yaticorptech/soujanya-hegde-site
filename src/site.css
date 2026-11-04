@@ -946,3 +946,4 @@ body[data-page="game"] .game{padding:14px 0 48px;min-height:0;place-items:start 
 .g-credit img{width:19px;height:19px}
 .g-credit a{color:rgba(226,177,76,.8)}
 .g-credit a:hover{color:var(--gold-2)}
+.g-emblem img{width:44px;height:44px;object-fit:contain}

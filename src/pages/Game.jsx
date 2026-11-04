@@ -285,7 +285,9 @@ export default function Game() {
 
         {stage === 'ready' && (
           <div className="g-card">
-            <div className="g-emblem" aria-hidden="true">✦</div>
+            <div className="g-emblem" aria-hidden="true">
+              <img src="/img/yaticorp-icon.png" alt="" />
+            </div>
             <Kicker>You're in</Kicker>
             <h1>
               Connect the <em>stars.</em>
