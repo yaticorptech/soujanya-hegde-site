@@ -130,21 +130,17 @@ export default function Home() {
               <a className="btn btn--ghost" href="#workshops">Explore workshops</a>
             </Reveal>
           </div>
-          <Reveal className="hero-photo">
-            <div className="frame" aria-hidden="true"></div>
-            <figure>
-              <img src="/img/madikeri-ps-01.jpg" alt="Soujanya Hegde laughing with a team during the cup-tower challenge" />
+          <Reveal className="hero-bento">
+            <figure className="b-main">
+              <img src="/img/madikeri-ps-01.jpg" alt="Soujanya laughing with a team during the cup-tower challenge" />
             </figure>
-            <figure className="float" aria-hidden="true">
-              <img src="/img/bootcamp-01.jpg" alt="" />
+            <figure className="b-side">
+              <img src="/img/bootcamp-01.jpg" alt="Kids giving thumbs up at the confidence bootcamp" />
             </figure>
-            <div className="stat">
+            <div className="b-brand">
               <b>100+</b>
-              <small>teams trained</small>
-            </div>
-            <div className="badge">
-              <small>Since day one</small>
-              Teach · Train · Transform
+              <span>teams &amp; batches trained</span>
+              <small>Teach · Train · Transform</small>
             </div>
           </Reveal>
         </div>
