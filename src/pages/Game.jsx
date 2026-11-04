@@ -250,6 +250,12 @@ export default function Game() {
   return (
     <section className="sec game">
       <div className="wrap">
+        <div className="g-head">
+          <img src="/img/logo.jpg" alt="" />
+          <span>
+            Soujanya <em>Hegde</em>
+          </span>
+        </div>
         {stage === 'lock' && (
           <form className={`g-card g-lock2 ${err ? 'g-err' : ''}`} onSubmit={unlock}>
             <img className="g-poster" src="/img/bni-poster.jpg" alt="BNI Inspire — Feature Presentation by Soujanya Hegde" />
