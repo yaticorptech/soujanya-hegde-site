@@ -5,22 +5,32 @@ import Home from './pages/Home'
 import Events from './pages/Events'
 import Event from './pages/Event'
 import Trainer from './pages/Trainer'
+import { initLenis, jumpToTop, glideTo } from './lib/smooth'
+import 'lenis/dist/lenis.css'
 
 /** Scroll to top on route change; honour /#section links from any page. */
+// A fresh visit always opens on the hero: no restored scroll position, no stale #hash jump.
+if (typeof window !== 'undefined') {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+  if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search)
+  window.scrollTo(0, 0)
+}
+
 function ScrollManager() {
   const { pathname, hash } = useLocation()
   useEffect(() => {
     if (hash) {
       // wait a tick so the target section exists after a route change
-      requestAnimationFrame(() => document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' }))
+      requestAnimationFrame(() => glideTo(hash))
     } else {
-      window.scrollTo(0, 0)
+      jumpToTop()
     }
   }, [pathname, hash])
   return null
 }
 
 export default function App() {
+  useEffect(() => initLenis(), [])
   const { pathname } = useLocation()
   return (
     <>

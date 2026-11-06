@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { glideTo, lockScroll } from '../lib/smooth'
 
 export const WA = 'https://wa.me/919880842007'
 export const waLink = (msg) => `${WA}?text=${encodeURIComponent(msg)}`
@@ -139,14 +140,11 @@ export function Mag({ children, strength = 0.22 }) {
 
 /** Global effects layer: scroll progress bar, nav shadow, cursor spotlight. */
 export function FX() {
-  const barRef = useRef(null)
   const glowRef = useRef(null)
 
   useEffect(() => {
-    const bar = barRef.current
     const onScroll = () => {
       const h = document.documentElement
-      bar.style.transform = `scaleX(${h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight)})`
       document.querySelector('.nav')?.classList.toggle('scrolled', h.scrollTop > 12)
     }
     onScroll()
@@ -162,18 +160,18 @@ export function FX() {
     let tx = x
     let ty = y
     let raf = 0
+    const tick = () => {
+      x += (tx - x) * 0.12
+      y += (ty - y) * 0.12
+      glow.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.5 ? requestAnimationFrame(tick) : 0
+    }
     const onMove = (e) => {
       tx = e.clientX
       ty = e.clientY
       glow.style.opacity = 1
+      if (!raf) raf = requestAnimationFrame(tick)
     }
-    const tick = () => {
-      x += (tx - x) * 0.09
-      y += (ty - y) * 0.09
-      glow.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
     window.addEventListener('mousemove', onMove, { passive: true })
     return () => {
       cancelAnimationFrame(raf)
@@ -183,51 +181,191 @@ export function FX() {
 
   return (
     <>
-      <div className="fx-progress" ref={barRef} aria-hidden="true" />
       <div className="fx-glow" ref={glowRef} aria-hidden="true" />
     </>
   )
 }
 
+const NAV_LINKS = [
+  { to: '/#takeaways', id: 'takeaways', label: 'What you learn' },
+  { to: '/#workshops', id: 'workshops', label: 'Workshops' },
+  { to: '/#programmes', id: 'programmes', label: 'Programmes' },
+  { to: '/#trainers', id: 'trainers', label: 'Trainers' },
+  { to: '/events', id: 'events', label: 'Events' },
+  { to: '/#faq', id: 'faq', label: 'FAQ' },
+]
+
+const HomeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M3.5 10.5L12 3.5l8.5 7" />
+    <path d="M5.5 9v10.5h13V9M10 19.5v-5h4v5" />
+  </svg>
+)
+
+const NavArrow = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M7 17L17 7M9 7h8v8" />
+  </svg>
+)
+
 export function Nav() {
   const [open, setOpen] = useState(false)
+  const [current, setCurrent] = useState('')
+  const [pill, setPill] = useState(null)
   const { pathname } = useLocation()
+  const listRef = useRef(null)
+
   useEffect(() => {
     setOpen(false)
   }, [pathname])
 
-  const links = [
-    ['/#takeaways', 'What you learn'],
-    ['/#workshops', 'Workshops'],
-    ['/#programmes', 'Programmes'],
-    ['/#trainers', 'Trainers'],
-    ['/events', 'Events'],
-    ['/#faq', 'FAQ'],
-  ]
+  // which section is on screen (home) / which page (events)
+  useEffect(() => {
+    if (pathname.startsWith('/events')) {
+      setCurrent('events')
+      return
+    }
+    if (pathname !== '/') {
+      setCurrent('')
+      return
+    }
+    setCurrent('')
+    const els = NAV_LINKS.map((l) => document.getElementById(l.id)).filter(Boolean)
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setCurrent(e.target.id)),
+      { rootMargin: '-40% 0px -55% 0px' },
+    )
+    els.forEach((el) => io.observe(el))
+    const onTop = () => window.scrollY < 200 && setCurrent('')
+    window.addEventListener('scroll', onTop, { passive: true })
+    return () => {
+      io.disconnect()
+      window.removeEventListener('scroll', onTop)
+    }
+  }, [pathname])
+
+  // lock page scroll + Esc to close while the mobile sheet is open
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    lockScroll(true)
+    const onKey = (e) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      lockScroll(false)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  // sliding highlight: follows hover, rests on the current section
+  const place = (el) => {
+    const list = listRef.current
+    if (!el || !list) return setPill(null)
+    setPill({ x: el.offsetLeft, w: el.offsetWidth })
+  }
+  useEffect(() => {
+    const list = listRef.current
+    const el = list?.querySelector(`[data-id="${current}"]`)
+    place(el || null)
+  }, [current])
+
+  // home: on the home page glide back to the hero, otherwise route to /
+  const goHome = (e) => {
+    setOpen(false)
+    if (pathname === '/') {
+      e.preventDefault()
+      glideTo(0)
+      if (window.location.hash) history.replaceState(null, '', '/')
+    }
+  }
+  const atHero = pathname === '/' && current === ''
+
+  const book = waLink("Hello, I'd like to know more about your workshops.")
 
   return (
-    <nav className="nav">
-      <div className="wrap">
-        <Link className="brand" to="/">
-          <img src="/img/sparktree-logo.png" alt="SparkTree Foundation logo" />
+    <nav className={`nav snav ${open ? 'is-open' : ''}`} aria-label="Main">
+      <div className="wrap snav-bar">
+        <Link className="brand snav-brand" to="/" aria-label="SparkTree Foundation home" onClick={goHome}>
+          <img src="/img/sparktree-logo.png" alt="" />
           <span>
             SparkTree<small>Foundation</small>
           </span>
         </Link>
-        <button className="burger" aria-label="Menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-        <div className={`nav-links ${open ? 'open' : ''}`} onClick={() => setOpen(false)}>
-          {links.map(([to, label]) => (
-            <Link key={to} to={to}>
-              {label}
+
+        <div
+          className="snav-links"
+          ref={listRef}
+          onMouseLeave={() => place(listRef.current?.querySelector(`[data-id="${current}"]`) || null)}
+        >
+          <span
+            className="snav-pill"
+            aria-hidden="true"
+            style={pill ? { transform: `translateX(${pill.x}px)`, width: pill.w, opacity: 1 } : { opacity: 0 }}
+          />
+          <Link to="/" className={`snav-home ${atHero ? 'on' : ''}`} aria-label="Home" title="Home" onClick={goHome}>
+            <HomeIcon />
+          </Link>
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.id}
+              to={l.to}
+              data-id={l.id}
+              className={current === l.id ? 'on' : ''}
+              aria-current={current === l.id ? 'true' : undefined}
+              onMouseEnter={(e) => place(e.currentTarget)}
+              onFocus={(e) => place(e.currentTarget)}
+            >
+              {l.label}
             </Link>
           ))}
-          <a className="btn btn--green" href={waLink("Hello, I'd like to know more about your workshops.")} target="_blank" rel="noopener">
-            Book a workshop
-          </a>
+        </div>
+
+        <a className="snav-cta" href={book} target="_blank" rel="noopener">
+          <WaIcon />
+          <span>Book a workshop</span>
+        </a>
+
+        <button
+          className="snav-burger"
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
+          aria-controls="snav-sheet"
+          onClick={() => setOpen((o) => !o)}
+        >
+          <span />
+          <span />
+        </button>
+      </div>
+
+      <div className="snav-sheet" id="snav-sheet" data-lenis-prevent aria-hidden={!open} inert={!open}>
+        <div className="snav-sheet-in">
+          <small className="snav-sheet-kick">Menu</small>
+          <ul>
+            <li style={{ '--i': -1 }}>
+              <Link to="/" className={atHero ? 'on' : ''} onClick={goHome}>
+                <em><HomeIcon /></em>
+                <span>Home</span>
+                <NavArrow />
+              </Link>
+            </li>
+            {NAV_LINKS.map((l, i) => (
+              <li key={l.id} style={{ '--i': i }}>
+                <Link to={l.to} className={current === l.id ? 'on' : ''} onClick={() => setOpen(false)}>
+                  <em>0{i + 1}</em>
+                  <span>{l.label}</span>
+                  <NavArrow />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="snav-sheet-foot" style={{ '--i': NAV_LINKS.length }}>
+            <a className="snav-sheet-cta" href={book} target="_blank" rel="noopener">
+              <WaIcon />
+              Book a workshop on WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     </nav>
@@ -270,6 +408,7 @@ export function Lightbox({ items, index, onClose, onIndex }) {
   useEffect(() => {
     if (!open) return
     document.body.style.overflow = 'hidden'
+    lockScroll(true)
     const onKey = (e) => {
       if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowLeft') onIndex((index - 1 + items.length) % items.length)
