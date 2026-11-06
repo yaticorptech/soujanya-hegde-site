@@ -417,6 +417,7 @@ export function Lightbox({ items, index, onClose, onIndex }) {
     window.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = ''
+      lockScroll(false)
       window.removeEventListener('keydown', onKey)
     }
   }, [open, index, items.length, onClose, onIndex])
