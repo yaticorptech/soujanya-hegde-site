@@ -3,11 +3,10 @@ export const EVENTS = [
   {
     "slug": "yaticorp",
     "title": "5-Day Campus to Corporate Training — YatiCorp",
-    "meta": "November 2026 · 28 photos",
+    "meta": "November 2026 · 27 photos",
     "lead": "Five-day Campus to Corporate training programme with YatiCorp — interview readiness, group discussions, team challenges and corporate etiquette for new joinees · November 2026",
-    "cover": "/img/yaticorp-01.jpg",
+    "cover": "/img/yaticorp-05.jpg",
     "photos": [
-      { "src": "/img/yaticorp-01.jpg", "cap": "The whole batch together — five days of Campus to Corporate" },
       { "src": "/img/yaticorp-10.jpg", "cap": "Soujanya and Preetham set the pace, mics in hand" },
       { "src": "/img/yaticorp-20.jpg", "cap": "Team challenge — heads down, build it together" },
       { "src": "/img/yaticorp-28.jpg", "cap": "One-on-one feedback across the table" },
@@ -42,7 +41,7 @@ export const EVENTS = [
     "title": "2-Day Leadership Training — Rise to Level Up, Hyderabad",
     "meta": "25 photos",
     "lead": "Two-day Rise to Level Up leadership training with JCI Hyderabad Deccan, Junior Jaycee Wing — discovering the leader in you through drills, role plays and stage time · Hyderabad",
-    "cover": "/img/hyderabad-01.jpg",
+    "cover": "/img/hyderabad-14.jpg",
     "photos": [
       { "src": "/img/hyderabad-01.jpg", "cap": "On stage at Rise to Level Up — discovering the leader in you" },
       { "src": "/img/hyderabad-12.jpg", "cap": "Expectations first — the trainers open day one" },

@@ -121,6 +121,7 @@ function WsDetail({ w, i }) {
 
 /** Phones: swipeable snap carousel of compact workshop cards. */
 function WorkshopRail() {
+  const wrapRef = useRef(null)
   const railRef = useRef(null)
   const [cur, setCur] = useState(0)
   const onScroll = () => {
@@ -130,9 +131,53 @@ function WorkshopRail() {
     const step = card ? card.offsetWidth + 14 : el.clientWidth
     setCur(Math.max(0, Math.min(WORKSHOPS.length - 1, Math.round(el.scrollLeft / step))))
   }
+  // Phones: pin the rail while the page scrolls — vertical scroll swipes the cards
+  // one by one; after the last card the page scrolls on normally.
+  useEffect(() => {
+    const wrap = wrapRef.current
+    const rail = railRef.current
+    if (!wrap || !rail) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const mq = window.matchMedia('(max-width: 860px)')
+    const pin = rail.parentElement
+    let dist = 0
+    const measure = () => {
+      if (!mq.matches) {
+        wrap.style.height = ''
+        wrap.classList.remove('is-pinned')
+        dist = 0
+        return
+      }
+      wrap.classList.add('is-pinned')
+      dist = rail.scrollWidth - rail.clientWidth
+      wrap.style.height = dist > 0 ? `${pin.offsetHeight + dist}px` : ''
+    }
+    const onPageScroll = () => {
+      if (dist <= 0) return
+      const span = wrap.offsetHeight - pin.offsetHeight
+      if (span <= 0) return
+      const travelled = pin.getBoundingClientRect().top - wrap.getBoundingClientRect().top
+      const p = Math.min(1, Math.max(0, travelled / span))
+      rail.scrollLeft = p * dist
+    }
+    const onResize = () => { measure(); onPageScroll() }
+    measure()
+    onPageScroll()
+    window.addEventListener('scroll', onPageScroll, { passive: true })
+    window.addEventListener('resize', onResize)
+    mq.addEventListener?.('change', onResize)
+    return () => {
+      window.removeEventListener('scroll', onPageScroll)
+      window.removeEventListener('resize', onResize)
+      mq.removeEventListener?.('change', onResize)
+      wrap.style.height = ''
+      wrap.classList.remove('is-pinned')
+    }
+  }, [])
   return (
-    <div className="wsr">
-      <div className="wsr-rail" ref={railRef} onScroll={onScroll}>
+    <div className="wsr" ref={wrapRef}>
+      <div className="wsr-pin">
+        <div className="wsr-rail" ref={railRef} onScroll={onScroll}>
         {WORKSHOPS.map((w, i) => (
           <article key={w.title} className={`wsr-card ${i === cur ? 'on' : ''}`} style={{ '--i': i }}>
             <figure className="wsr-photo">
@@ -160,6 +205,7 @@ function WorkshopRail() {
             </div>
           </article>
         ))}
+        </div>
       </div>
     </div>
   )
@@ -210,17 +256,16 @@ const PROGRAMMES = [
 ]
 
 const STATS = [
-  [100, '+', 'Corporates & teams trained', <><rect x="3" y="7" width="18" height="13" rx="2.5" /><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18" /></>],
-  [10, '+', 'Programmes across India', <><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></>],
-  [240, '+', 'Workshop moments captured', <><path d="M4 8h3l1.5-2.5h7L17 8h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></>],
+  [1000, '+', 'Corporates & teams trained', <><rect x="3" y="7" width="18" height="13" rx="2.5" /><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18" /></>],
+  [150, '+', 'Programmes across India', <><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></>],
   [2, '', 'Lead trainers on every floor', <><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.3A6.5 6.5 0 0 1 21.5 20" /></>],
 ]
 
 const STRIP = [
   ['yaticorp', 'yaticorp-01'], ['kadaba', 'kadaba-09'], ['mangalore', 'mangalore-02'], ['alvas', 'alvas-12'],
-  ['madikeri-ps', 'madikeri-ps-01'], ['bootcamp', 'bootcamp-01'], ['yaticorp', 'yaticorp-20'], ['atmashakthi', 'atmashakthi-12'],
+  ['madikeri-ps', 'madikeri-ps-01'], ['bootcamp', 'bootcamp-01'], ['yaticorp', 'yaticorp-20', '50% 30%'], ['atmashakthi', 'atmashakthi-12'],
   ['madikeri', 'madikeri-03'], ['women', 'women-11'], ['kadaba', 'kadaba-05'], ['mangalore', 'mangalore-01'],
-  ['yaticorp', 'yaticorp-10'], ['hyderabad', 'hyderabad-01'], ['madikeri-ps', 'madikeri-ps-25'], ['bootcamp', 'bootcamp-02'],
+  ['yaticorp', 'yaticorp-10', '50% 45%'], ['hyderabad', 'hyderabad-01'], ['madikeri-ps', 'madikeri-ps-25', '50% 32%'], ['bootcamp', 'bootcamp-02'],
   ['hyderabad', 'hyderabad-12'],
 ]
 const STRIP_B = [...STRIP].reverse()
@@ -303,12 +348,11 @@ function ProgrammeBento() {
 }
 
 const QUOTES = [
-  ['★★★★★', 'Step Up by SparkTree was a truly transformative experience. Confidence soared and communication skills sharpened. The sessions pushed us beyond our comfort zones.', 'BG', 'Lion Bindu Ganapathi', 'Zone Chairperson'],
   ['★★★★', 'The Mic Magic session was truly a game changer — body language, speech structure, ideation and all the little details that make a big difference. It gave me the confidence to deliver a speech on any topic.', 'AM', 'Alka Manoj', 'Founder & Designer, Ohana by Alka'],
   ['★★★★★', "SparkTree's Campus to Corporate training for our new joinees exceeded all expectations — content-rich sessions packed with learning, delivered with fun and engagement.", 'K', 'Kripa', 'General Manager, YatiCorp India'],
 ]
 
-const QUOTE_PROG = ['Step Up', 'Mic Magic', 'Campus to Corporate']
+const QUOTE_PROG = ['Mic Magic', 'Campus to Corporate']
 const QUOTE_MS = 7000
 
 /** One big rotating quote + a picker of who said it. */
@@ -672,16 +716,16 @@ export default function Home() {
           </Reveal>
           <Reveal className="stk-strip">
             <div className="track">
-              {[...STRIP, ...STRIP].map(([slug, img], i) => (
+              {[...STRIP, ...STRIP].map(([slug, img, pos], i) => (
                 <Link key={i} to={`/events/${slug}`}>
-                  <img src={`/img/${img}.jpg`} alt="" loading="lazy" />
+                  <img src={`/img/${img}.jpg`} alt="" loading="lazy" style={pos ? { objectPosition: pos } : undefined} />
                 </Link>
               ))}
             </div>
             <div className="track rev">
-              {[...STRIP_B, ...STRIP_B].map(([slug, img], i) => (
+              {[...STRIP_B, ...STRIP_B].map(([slug, img, pos], i) => (
                 <Link key={i} to={`/events/${slug}`}>
-                  <img src={`/img/${img}.jpg`} alt="" loading="lazy" />
+                  <img src={`/img/${img}.jpg`} alt="" loading="lazy" style={pos ? { objectPosition: pos } : undefined} />
                 </Link>
               ))}
             </div>
