@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 export const WA = 'https://wa.me/919880842007'
 export const waLink = (msg) => `${WA}?text=${encodeURIComponent(msg)}`
+
+const finePointer = () => window.matchMedia('(pointer: fine)').matches
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 export const WaIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor">
@@ -16,12 +19,12 @@ export const ArrowIcon = () => (
   </svg>
 )
 
-/** Reveal-on-scroll using the stylesheet's .rv / .in classes. */
-export function Reveal({ as: Tag = 'div', className = '', children, ...rest }) {
+/** One-shot in-view flag (always true under prefers-reduced-motion). */
+export function useInView(threshold = 0.12) {
   const ref = useRef(null)
   const [inView, setInView] = useState(false)
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (reducedMotion()) {
       setInView(true)
       return
     }
@@ -32,15 +35,157 @@ export function Reveal({ as: Tag = 'div', className = '', children, ...rest }) {
           io.disconnect()
         }
       },
-      { threshold: 0.12 },
+      { threshold },
     )
     io.observe(ref.current)
     return () => io.disconnect()
-  }, [])
+  }, [threshold])
+  return [ref, inView]
+}
+
+/**
+ * Reveal-on-scroll using the stylesheet's .rv / .in classes.
+ * d = stagger step (90ms each); tilt = 3D mouse tilt + glare once revealed.
+ */
+export function Reveal({ as: Tag = 'div', className = '', d = 0, tilt = false, style, children, ...rest }) {
+  const [ref, inView] = useInView()
+
+  const onMove = tilt
+    ? (e) => {
+        if (!finePointer() || reducedMotion()) return
+        const el = ref.current
+        const r = el.getBoundingClientRect()
+        const px = (e.clientX - r.left) / r.width
+        const py = (e.clientY - r.top) / r.height
+        el.style.setProperty('--rx', `${((py - 0.5) * -2 * 6).toFixed(2)}deg`)
+        el.style.setProperty('--ry', `${((px - 0.5) * 2 * 6).toFixed(2)}deg`)
+        el.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`)
+        el.style.setProperty('--my', `${(py * 100).toFixed(1)}%`)
+      }
+    : undefined
+  const onLeave = tilt
+    ? () => {
+        ref.current.style.setProperty('--rx', '0deg')
+        ref.current.style.setProperty('--ry', '0deg')
+      }
+    : undefined
+
   return (
-    <Tag ref={ref} className={`rv ${inView ? 'in' : ''} ${className}`.trim()} {...rest}>
+    <Tag
+      ref={ref}
+      className={`rv ${tilt ? 'tilt' : ''} ${inView ? 'in' : ''} ${className}`.replace(/\s+/g, ' ').trim()}
+      style={{ transitionDelay: d ? `${d * 90}ms` : undefined, ...style }}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      {...rest}
+    >
       {children}
+      {tilt && <i className="glare" aria-hidden="true" />}
     </Tag>
+  )
+}
+
+/** Splits text into per-word mask spans for the assemble-on-view headline.
+    The space must live OUTSIDE the overflow-hidden mask span — a trailing
+    space inside an inline-block is collapsed and the words run together. */
+export function Words({ text, from = 0, step = 70 }) {
+  return text.split(' ').map((w, i) => (
+    <Fragment key={i}>
+      <span className="wm">
+        <span className="w" style={{ transitionDelay: `${(from + i) * step}ms` }}>
+          {w}
+        </span>
+      </span>
+      {' '}
+    </Fragment>
+  ))
+}
+
+/** Cycles through words with a flip-up animation. */
+export function RotatingWord({ words, interval = 2800 }) {
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (reducedMotion()) return
+    const t = setInterval(() => setI((v) => (v + 1) % words.length), interval)
+    return () => clearInterval(t)
+  }, [words.length, interval])
+  return (
+    <span className="rot-wrap">
+      <span className="rot-word" key={i}>
+        {words[i]}
+      </span>
+    </span>
+  )
+}
+
+/** Magnetic hover wrapper — the child gently follows the cursor. */
+export function Mag({ children, strength = 0.22 }) {
+  const ref = useRef(null)
+  const onMove = (e) => {
+    if (!finePointer() || reducedMotion()) return
+    const el = ref.current
+    const r = el.getBoundingClientRect()
+    el.style.transform = `translate(${((e.clientX - r.left - r.width / 2) * strength).toFixed(1)}px, ${((e.clientY - r.top - r.height / 2) * strength).toFixed(1)}px)`
+  }
+  const onLeave = () => {
+    ref.current.style.transform = ''
+  }
+  return (
+    <span className="mag" ref={ref} onMouseMove={onMove} onMouseLeave={onLeave}>
+      {children}
+    </span>
+  )
+}
+
+/** Global effects layer: scroll progress bar, nav shadow, cursor spotlight. */
+export function FX() {
+  const barRef = useRef(null)
+  const glowRef = useRef(null)
+
+  useEffect(() => {
+    const bar = barRef.current
+    const onScroll = () => {
+      const h = document.documentElement
+      bar.style.transform = `scaleX(${h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight)})`
+      document.querySelector('.nav')?.classList.toggle('scrolled', h.scrollTop > 12)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    if (!finePointer() || reducedMotion()) return
+    const glow = glowRef.current
+    let x = innerWidth / 2
+    let y = innerHeight / 3
+    let tx = x
+    let ty = y
+    let raf = 0
+    const onMove = (e) => {
+      tx = e.clientX
+      ty = e.clientY
+      glow.style.opacity = 1
+    }
+    const tick = () => {
+      x += (tx - x) * 0.09
+      y += (ty - y) * 0.09
+      glow.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('mousemove', onMove)
+    }
+  }, [])
+
+  return (
+    <>
+      <div className="fx-progress" ref={barRef} aria-hidden="true" />
+      <div className="fx-glow" ref={glowRef} aria-hidden="true" />
+    </>
   )
 }
 

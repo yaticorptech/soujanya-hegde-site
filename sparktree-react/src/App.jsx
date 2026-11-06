@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { Nav, Footer } from './components/shared'
+import { FX, Nav, Footer } from './components/shared'
 import Home from './pages/Home'
 import Events from './pages/Events'
 import Event from './pages/Event'
@@ -21,17 +21,21 @@ function ScrollManager() {
 }
 
 export default function App() {
+  const { pathname } = useLocation()
   return (
     <>
       <ScrollManager />
+      <FX />
       <Nav />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/events/:slug" element={<Event />} />
-        <Route path="/trainers/:slug" element={<Trainer />} />
-        <Route path="*" element={<Events />} />
-      </Routes>
+      <div className="page" key={pathname}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/events/:slug" element={<Event />} />
+          <Route path="/trainers/:slug" element={<Trainer />} />
+          <Route path="*" element={<Events />} />
+        </Routes>
+      </div>
       <Footer />
     </>
   )

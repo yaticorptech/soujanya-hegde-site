@@ -5,7 +5,7 @@ import { EVENTS } from '../events-data'
 export default function Events() {
   useTitle(
     'Events — SparkTree Foundation',
-    "Photo stories from SparkTree workshops for kids, campuses, co-operatives, Lions Clubs and women's networks across Karnataka.",
+    "Photo stories from SparkTree workshops for kids, campuses, corporates, co-operatives, Lions Clubs, JCI and women's networks across India.",
   )
 
   return (
