@@ -29,12 +29,34 @@ function ScrollManager() {
   return null
 }
 
+/** Pause CSS animations in any section that is off screen; resume when it scrolls back (keeps the page light). */
+function OffscreenPause() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    let io
+    const t = setTimeout(() => {
+      const els = document.querySelectorAll('.page > header, .page section, .page > div > header, header.sk-hero, footer')
+      io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => e.target.classList.toggle('is-off', !e.isIntersecting)),
+        { rootMargin: '120px 0px' },
+      )
+      els.forEach((el) => io.observe(el))
+    }, 60)
+    return () => {
+      clearTimeout(t)
+      io?.disconnect()
+    }
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   useEffect(() => initLenis(), [])
   const { pathname } = useLocation()
   return (
     <>
       <ScrollManager />
+      <OffscreenPause />
       <FX />
       <Nav />
       <div className="page" key={pathname}>

@@ -29,14 +29,13 @@ export function useInView(threshold = 0.12) {
       setInView(true)
       return
     }
+    // replays every time: in when it crosses the threshold, out only once it has fully left the screen
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) {
-          setInView(true)
-          io.disconnect()
-        }
+        if (e.isIntersecting && e.intersectionRatio >= threshold) setInView(true)
+        else if (!e.isIntersecting) setInView(false)
       },
-      { threshold },
+      { threshold: [0, threshold] },
     )
     io.observe(ref.current)
     return () => io.disconnect()
@@ -138,7 +137,7 @@ export function Mag({ children, strength = 0.22 }) {
   )
 }
 
-/** Global effects layer: scroll progress bar, nav shadow, cursor spotlight. */
+/** Global effects layer: scroll progress bar, nav shadow, auto-orbiting hero glow. */
 export function FX() {
   const glowRef = useRef(null)
 
@@ -152,30 +151,34 @@ export function FX() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // hero glow: drifts on its own in a slow loop around the hero; the loop sleeps once scrolled past (saves CPU)
   useEffect(() => {
-    if (!finePointer() || reducedMotion()) return
+    if (reducedMotion()) return
     const glow = glowRef.current
-    let x = innerWidth / 2
-    let y = innerHeight / 3
-    let tx = x
-    let ty = y
     let raf = 0
-    const tick = () => {
-      x += (tx - x) * 0.12
-      y += (ty - y) * 0.12
+    const t0 = performance.now()
+    const tick = (now) => {
+      const vh = innerHeight
+      const fade = Math.max(0, 1 - window.scrollY / (vh * 0.8))
+      glow.style.opacity = fade.toFixed(3)
+      if (fade <= 0) {
+        raf = 0
+        return
+      }
+      const a = ((now - t0) / 18000) * Math.PI * 2 // one lap ≈ 18s
+      const x = innerWidth / 2 + Math.cos(a) * innerWidth * 0.36
+      const y = vh * 0.48 + Math.sin(a) * vh * 0.3 - window.scrollY
       glow.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`
-      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.5 ? requestAnimationFrame(tick) : 0
+      raf = requestAnimationFrame(tick)
     }
-    const onMove = (e) => {
-      tx = e.clientX
-      ty = e.clientY
-      glow.style.opacity = 1
-      if (!raf) raf = requestAnimationFrame(tick)
+    const wake = () => {
+      if (!raf && window.scrollY < innerHeight * 0.8) raf = requestAnimationFrame(tick)
     }
-    window.addEventListener('mousemove', onMove, { passive: true })
+    raf = requestAnimationFrame(tick)
+    window.addEventListener('scroll', wake, { passive: true })
     return () => {
       cancelAnimationFrame(raf)
-      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('scroll', wake)
     }
   }, [])
 
@@ -184,6 +187,17 @@ export function FX() {
       <div className="fx-glow" ref={glowRef} aria-hidden="true" />
     </>
   )
+}
+
+/** On the home page, /#section links glide straight there — even when the URL already has that hash,
+ *  and only after any open menu has released its scroll lock. Returns true when it handled the click. */
+export function goToSection(e, to, pathname) {
+  const hash = to.split('#')[1]
+  if (!hash || pathname !== '/') return false
+  e.preventDefault()
+  history.replaceState(null, '', `/#${hash}`)
+  requestAnimationFrame(() => requestAnimationFrame(() => glideTo(`#${hash}`)))
+  return true
 }
 
 const NAV_LINKS = [
@@ -247,13 +261,16 @@ export function Nav() {
   // lock page scroll + Esc to close while the mobile sheet is open
   useEffect(() => {
     if (!open) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    // lock on <html>, not <body>: with html{overflow-x:clip}, a hidden-overflow body becomes its own
+    // scroll box and the sticky nav (and this sheet) would jump back to the top of the document
+    const root = document.documentElement
+    const prev = root.style.overflow
+    root.style.overflow = 'hidden'
     lockScroll(true)
     const onKey = (e) => e.key === 'Escape' && setOpen(false)
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prev
+      root.style.overflow = prev
       lockScroll(false)
       window.removeEventListener('keydown', onKey)
     }
@@ -276,7 +293,8 @@ export function Nav() {
     setOpen(false)
     if (pathname === '/') {
       e.preventDefault()
-      glideTo(0)
+      // wait for the menu to release its scroll lock before gliding
+      requestAnimationFrame(() => requestAnimationFrame(() => glideTo(0)))
       if (window.location.hash) history.replaceState(null, '', '/')
     }
   }
@@ -316,6 +334,7 @@ export function Nav() {
               aria-current={current === l.id ? 'true' : undefined}
               onMouseEnter={(e) => place(e.currentTarget)}
               onFocus={(e) => place(e.currentTarget)}
+              onClick={(e) => goToSection(e, l.to, pathname)}
             >
               {l.label}
             </Link>
@@ -352,7 +371,14 @@ export function Nav() {
             </li>
             {NAV_LINKS.map((l, i) => (
               <li key={l.id} style={{ '--i': i }}>
-                <Link to={l.to} className={current === l.id ? 'on' : ''} onClick={() => setOpen(false)}>
+                <Link
+                  to={l.to}
+                  className={current === l.id ? 'on' : ''}
+                  onClick={(e) => {
+                    setOpen(false)
+                    goToSection(e, l.to, pathname)
+                  }}
+                >
                   <em>0{i + 1}</em>
                   <span>{l.label}</span>
                   <NavArrow />
@@ -372,28 +398,72 @@ export function Nav() {
   )
 }
 
+const FOOT_PROGRAMMES = [
+  ['Campus to Corporate', '/events/yaticorp'],
+  ['Rise to Level Up', '/events/hyderabad'],
+  ['Step Up — Lions Clubs', '/events/madikeri'],
+  ['Mic Magic', '/events/women'],
+  ['Speech Spark Junior', '/events/kadaba'],
+]
+
 export function Footer() {
+  const { pathname } = useLocation()
   return (
     <>
-      <footer>
+      <footer className="ft">
         <div className="wrap">
-          <Link className="brand" to="/">
-            <img src="/img/sparktree-logo.png" alt="" />
+          <div className="ft-top">
+            <div className="ft-brand">
+              <Link className="brand" to="/">
+                <img src="/img/sparktree-logo.png" alt="" />
+                <span>
+                  SparkTree<small>Foundation</small>
+                </span>
+              </Link>
+              <p className="ft-tag">
+                Teach · Train · <em>Transform.</em>
+              </p>
+              <p className="ft-about">Custom soft-skills and public-speaking programmes for teams, campuses and clubs across Karnataka.</p>
+              <a className="ft-wa" href={waLink("Hello, I'd like to know more about your workshops.")} target="_blank" rel="noopener">
+                <WaIcon />
+                <span>
+                  <small>Chat on WhatsApp</small>
+                  +91 98808 42007
+                </span>
+              </a>
+            </div>
+            <nav className="ft-col" aria-label="Explore">
+              <h4>Explore</h4>
+              <ul>
+                {NAV_LINKS.map((l) => (
+                  <li key={l.id}><Link to={l.to} onClick={(e) => goToSection(e, l.to, pathname)}>{l.label}</Link></li>
+                ))}
+              </ul>
+            </nav>
+            <nav className="ft-col" aria-label="Programmes">
+              <h4>Programmes</h4>
+              <ul>
+                {FOOT_PROGRAMMES.map(([t, to]) => (
+                  <li key={t}><Link to={to}>{t}</Link></li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+          <div className="ft-bottom">
+            <span>© 2026 SparkTree Foundation. All rights reserved.</span>
             <span>
-              SparkTree<small>Foundation</small>
+              Developed by{' '}
+              <a href="https://yaticorp.com" target="_blank" rel="noopener">
+                Yaticorp
+              </a>
             </span>
-          </Link>
-          <span>© 2026 SparkTree Foundation. All rights reserved.</span>
-          <span>
-            Developed by{' '}
-            <a href="https://yaticorp.com" target="_blank" rel="noopener">
-              Yaticorp
-            </a>
-          </span>
-          <a href={WA} target="_blank" rel="noopener">
-            WhatsApp: +91 98808 42007
-          </a>
+            <button type="button" className="ft-up" onClick={() => glideTo(0)}>
+              Back to top
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+            </button>
+          </div>
         </div>
+        <span className="ft-word" aria-hidden="true">SparkTree</span>
       </footer>
       <a className="wa-fab" href={waLink("Hello, I'd like to know more about your workshops.")} target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
         <WaIcon />
@@ -407,7 +477,7 @@ export function Lightbox({ items, index, onClose, onIndex }) {
   const open = index != null
   useEffect(() => {
     if (!open) return
-    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
     lockScroll(true)
     const onKey = (e) => {
       if (e.key === 'Escape') onClose()
@@ -416,7 +486,7 @@ export function Lightbox({ items, index, onClose, onIndex }) {
     }
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
       lockScroll(false)
       window.removeEventListener('keydown', onKey)
     }

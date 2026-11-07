@@ -40,8 +40,8 @@ export default function HeroFX({ targetRef }) {
     const sctx = sprite.getContext('2d')
     const grad = sctx.createRadialGradient(32, 32, 0, 32, 32, 32)
     grad.addColorStop(0, 'rgba(247,233,184,1)')
-    grad.addColorStop(0.35, 'rgba(217,179,91,.85)')
-    grad.addColorStop(1, 'rgba(217,179,91,0)')
+    grad.addColorStop(0.35, 'rgba(207,167,90,.85)')
+    grad.addColorStop(1, 'rgba(207,167,90,0)')
     sctx.fillStyle = grad
     sctx.fillRect(0, 0, 64, 64)
 

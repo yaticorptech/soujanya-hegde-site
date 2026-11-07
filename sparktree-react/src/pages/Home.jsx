@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Reveal, Mag, WaIcon, ArrowIcon, waLink, useTitle } from '../components/shared'
-import { EVENTS } from '../events-data'
 import { TRAINERS as TRAINER_PROFILES } from '../trainers-data'
-import SkillHero from '../components/SkillHero'
+import SkillHero, { SkillTree } from '../components/SkillHero'
+import FieldJournal from '../components/FieldJournal'
+import { glideTo } from '../lib/smooth'
 
 const PILLARS = [
   {
@@ -121,65 +122,82 @@ function WsDetail({ w, i }) {
 
 /** Phones: swipeable snap carousel of compact workshop cards. */
 function WorkshopRail() {
-  const wrapRef = useRef(null)
   const railRef = useRef(null)
   const [cur, setCur] = useState(0)
+  const [seen, setSeen] = useState(false)
+  const [touching, setTouching] = useState(false)
+  const pos = useRef(0) // sub-pixel scroll position for the glide
+  const resume = useRef(0)
+  const auto = seen && !touching && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // width of one full set of cards (the list is rendered twice so the glide loops seamlessly)
+  const loopW = () => {
+    const el = railRef.current
+    return el ? el.children[WORKSHOPS.length].offsetLeft - el.children[0].offsetLeft : 0
+  }
+
   const onScroll = () => {
     const el = railRef.current
     if (!el) return
     const card = el.firstElementChild
     const step = card ? card.offsetWidth + 14 : el.clientWidth
-    setCur(Math.max(0, Math.min(WORKSHOPS.length - 1, Math.round(el.scrollLeft / step))))
+    setCur(Math.round(el.scrollLeft / step) % WORKSHOPS.length)
   }
-  // Phones: pin the rail while the page scrolls — vertical scroll swipes the cards
-  // one by one; after the last card the page scrolls on normally.
+
   useEffect(() => {
-    const wrap = wrapRef.current
-    const rail = railRef.current
-    if (!wrap || !rail) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const mq = window.matchMedia('(max-width: 860px)')
-    const pin = rail.parentElement
-    let dist = 0
-    const measure = () => {
-      if (!mq.matches) {
-        wrap.style.height = ''
-        wrap.classList.remove('is-pinned')
-        dist = 0
-        return
-      }
-      wrap.classList.add('is-pinned')
-      dist = rail.scrollWidth - rail.clientWidth
-      wrap.style.height = dist > 0 ? `${pin.offsetHeight + dist}px` : ''
-    }
-    const onPageScroll = () => {
-      if (dist <= 0) return
-      const span = wrap.offsetHeight - pin.offsetHeight
-      if (span <= 0) return
-      const travelled = pin.getBoundingClientRect().top - wrap.getBoundingClientRect().top
-      const p = Math.min(1, Math.max(0, travelled / span))
-      rail.scrollLeft = p * dist
-    }
-    const onResize = () => { measure(); onPageScroll() }
-    measure()
-    onPageScroll()
-    window.addEventListener('scroll', onPageScroll, { passive: true })
-    window.addEventListener('resize', onResize)
-    mq.addEventListener?.('change', onResize)
-    return () => {
-      window.removeEventListener('scroll', onPageScroll)
-      window.removeEventListener('resize', onResize)
-      mq.removeEventListener?.('change', onResize)
-      wrap.style.height = ''
-      wrap.classList.remove('is-pinned')
-    }
+    const io = new IntersectionObserver(([e]) => setSeen(e.isIntersecting), { threshold: 0.3 })
+    io.observe(railRef.current)
+    return () => io.disconnect()
   }, [])
+
+  // continuous glide (~30px/s); wraps back by one set width so it never ends
+  useEffect(() => {
+    if (!auto) return
+    const el = railRef.current
+    const w = loopW()
+    pos.current = el.scrollLeft % w
+    el.scrollLeft = pos.current
+    let raf = 0
+    let last = performance.now()
+    const step = (t) => {
+      pos.current += Math.min(50, t - last) * 0.03
+      last = t
+      if (pos.current >= w) pos.current -= w
+      el.scrollLeft = pos.current
+      raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [auto])
+
+  // a touch hands control to the visitor; the glide picks up again shortly after they let go
+  const hold = () => {
+    clearTimeout(resume.current)
+    setTouching(true)
+  }
+  const release = () => {
+    clearTimeout(resume.current)
+    resume.current = setTimeout(() => setTouching(false), 2200)
+  }
+  useEffect(() => () => clearTimeout(resume.current), [])
+
   return (
-    <div className="wsr" ref={wrapRef}>
-      <div className="wsr-pin">
-        <div className="wsr-rail" ref={railRef} onScroll={onScroll}>
-        {WORKSHOPS.map((w, i) => (
-          <article key={w.title} className={`wsr-card ${i === cur ? 'on' : ''}`} style={{ '--i': i }}>
+    <div className="wsr">
+      <div
+        className="wsr-rail"
+        ref={railRef}
+        onScroll={onScroll}
+        onTouchStart={hold}
+        onTouchEnd={release}
+        onTouchCancel={release}
+        onPointerDown={hold}
+        onPointerUp={release}
+      >
+        {[...WORKSHOPS, ...WORKSHOPS].map((w, j) => {
+          const i = j % WORKSHOPS.length
+          const dup = j >= WORKSHOPS.length
+          return (
+          <article key={`${w.title}-${j}`} className={`wsr-card ${i === cur ? 'on' : ''}`} style={{ '--i': j }} aria-hidden={dup || undefined}>
             <figure className="wsr-photo">
               <img src={w.img} alt="" loading="lazy" />
               <span className="wsr-num">0{i + 1} <i>/ 0{WORKSHOPS.length}</i></span>
@@ -195,28 +213,53 @@ function WorkshopRail() {
                 <span><WsIc d={<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /></>} />16–24 / batch</span>
               </div>
               <div className="wsr-ctas">
-                <a className="wsr-book" href={waLink(`Hello, I'd like to book the ${w.title} workshop.`)} target="_blank" rel="noopener">
+                <a className="wsr-book" tabIndex={dup ? -1 : undefined} href={waLink(`Hello, I'd like to book the ${w.title} workshop.`)} target="_blank" rel="noopener">
                   <WaIcon />Book
                 </a>
-                <Link className="wsr-see" to={`/events/${w.ev}`} aria-label={`See ${w.title} in action`}>
+                <Link className="wsr-see" tabIndex={dup ? -1 : undefined} to={`/events/${w.ev}`} aria-label={`See ${w.title} in action`}>
                   See it in action <ArrowIcon />
                 </Link>
               </div>
             </div>
           </article>
-        ))}
-        </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
+const WS_MS = 5000 // auto-advance interval for the desktop workshop explorer
+
 function WorkshopExplorer() {
   const [active, setActive] = useState(0)
+  const [hold, setHold] = useState(false) // pointer over the explorer: the visitor is driving
+  const [seen, setSeen] = useState(false)
+  const boxRef = useRef(null)
   const w = WORKSHOPS[active]
+  const auto = seen && !hold && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => setSeen(e.isIntersecting), { threshold: 0.4 })
+    io.observe(boxRef.current)
+    return () => io.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!auto) return
+    const id = setTimeout(() => setActive((a) => (a + 1) % WORKSHOPS.length), WS_MS)
+    return () => clearTimeout(id)
+  }, [auto, active])
+
   return (
     <>
-      <div className="wsx">
+      <div
+        className={`wsx ${auto ? 'is-auto' : ''}`}
+        ref={boxRef}
+        style={{ '--ws-ms': `${WS_MS}ms` }}
+        onMouseEnter={() => setHold(true)}
+        onMouseLeave={() => setHold(false)}
+      >
         <ol className="wsx-list">
           {WORKSHOPS.map((x, i) => (
             <li key={x.title} className={i === active ? 'on' : ''}>
@@ -234,6 +277,7 @@ function WorkshopExplorer() {
                 </span>
                 <span className="wsx-arrow" aria-hidden="true"><ArrowIcon /></span>
               </button>
+              {i === active && <span className="wsx-prog" key={`p-${active}`} aria-hidden="true" />}
             </li>
           ))}
         </ol>
@@ -249,26 +293,18 @@ function WorkshopExplorer() {
 }
 
 const PROGRAMMES = [
-  ['Pre-recruitment programme', 'Campus to Corporate', '/img/sparktree-03.jpg', 'alvas', 'Interviews, group discussions and workplace etiquette for final-year students and new joinees.'],
-  ['Building Lion leaders of tomorrow', 'Step Up', '/img/sparktree-06.jpg', 'madikeri', 'Confidence and stage time for Lions Club members stepping into leadership roles.'],
-  ['Leadership training programme', 'Rise to Level Up', '/img/sparktree-12.jpg', 'hyderabad', 'Drills, role plays and stage time that help emerging leaders discover their voice.'],
-  ["Women's Networking Club", 'Mic Magic', '/img/sparktree-07.jpg', 'women', 'Body language, speech structure and ideation in a supportive, women-only room.'],
+  ['Pre-recruitment programme', 'Campus to Corporate', '/img/alvas-11.jpg', 'alvas', 'Interviews, group discussions and workplace etiquette for final-year students and new joinees.'],
+  ['Building Lion leaders of tomorrow', 'Step Up', '/img/madikeri-07.jpg', 'madikeri', 'Confidence and stage time for Lions Club members stepping into leadership roles.'],
+  ['Leadership training programme', 'Rise to Level Up', '/img/hyderabad-06.jpg', 'hyderabad', 'Drills, role plays and stage time that help emerging leaders discover their voice.'],
+  ["Women's Networking Club", 'Mic Magic', '/img/women-02.jpg', 'women', 'Body language, speech structure and ideation in a supportive, women-only room.'],
 ]
 
 const STATS = [
   [1000, '+', 'Corporates & teams trained', <><rect x="3" y="7" width="18" height="13" rx="2.5" /><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18" /></>],
   [150, '+', 'Programmes across India', <><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></>],
+  [240, '+', 'Workshop moments captured', <><path d="M4 8h3l1.5-2.5h7L17 8h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></>],
   [2, '', 'Lead trainers on every floor', <><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.3A6.5 6.5 0 0 1 21.5 20" /></>],
 ]
-
-const STRIP = [
-  ['yaticorp', 'yaticorp-01'], ['kadaba', 'kadaba-09'], ['mangalore', 'mangalore-02'], ['alvas', 'alvas-12'],
-  ['madikeri-ps', 'madikeri-ps-01'], ['bootcamp', 'bootcamp-01'], ['yaticorp', 'yaticorp-20', '50% 30%'], ['atmashakthi', 'atmashakthi-12'],
-  ['madikeri', 'madikeri-03'], ['women', 'women-11'], ['kadaba', 'kadaba-05'], ['mangalore', 'mangalore-01'],
-  ['yaticorp', 'yaticorp-10', '50% 45%'], ['hyderabad', 'hyderabad-01'], ['madikeri-ps', 'madikeri-ps-25', '50% 32%'], ['bootcamp', 'bootcamp-02'],
-  ['hyderabad', 'hyderabad-12'],
-]
-const STRIP_B = [...STRIP].reverse()
 
 /** Counts up when scrolled into view. */
 function Count({ to, delay = 0, dur = 1600 }) {
@@ -323,6 +359,127 @@ function RoleTicker({ roles }) {
   )
 }
 
+const PG_MS = 4800
+
+/** Phones: an app-style card deck — swipe the top card away (or tap a thumb), it also deals itself on a timer. */
+function ProgrammeDeck() {
+  const n = PROGRAMMES.length
+  const [active, setActive] = useState(0)
+  const [drag, setDrag] = useState({ dx: 0, on: false })
+  const [fly, setFly] = useState(0) // -1 / 1 while the top card flies off
+  const [seen, setSeen] = useState(false)
+  const [busy, setBusy] = useState(false) // finger down: pause the timer
+  const deckRef = useRef(null)
+  const start = useRef(null)
+  const moved = useRef(false)
+  const auto = seen && !busy && !drag.on && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => setSeen(e.isIntersecting), { threshold: 0.45 })
+    io.observe(deckRef.current)
+    return () => io.disconnect()
+  }, [])
+
+  const deal = (dir = 1, to) => {
+    if (fly) return
+    setFly(dir)
+    setTimeout(() => {
+      setActive((a) => (to ?? a + dir + n) % n)
+      setFly(0)
+      setDrag({ dx: 0, on: false })
+    }, 320)
+  }
+
+  useEffect(() => {
+    if (!auto) return
+    const id = setTimeout(() => deal(1), PG_MS)
+    return () => clearTimeout(id)
+  }, [auto, active])
+
+  const onDown = (e) => {
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    start.current = e.clientX
+    moved.current = false
+    setBusy(true)
+    setDrag({ dx: 0, on: true })
+  }
+  const onMove = (e) => {
+    if (start.current == null) return
+    const dx = e.clientX - start.current
+    if (Math.abs(dx) > 8) moved.current = true
+    setDrag({ dx, on: true })
+  }
+  const onUp = () => {
+    if (start.current == null) return
+    const dx = drag.dx
+    start.current = null
+    setBusy(false)
+    if (Math.abs(dx) > 70) deal(dx < 0 ? 1 : -1)
+    else setDrag({ dx: 0, on: false })
+  }
+
+  return (
+    <div className={`pgd ${auto ? 'is-auto' : ''}`} style={{ '--pg-ms': `${PG_MS}ms` }}>
+      <div className="pgd-deck" ref={deckRef}>
+        {PROGRAMMES.map(([small, name, img, ev, text], i) => {
+          const d = (i - active + n) % n
+          const top = d === 0
+          const style = top
+            ? {
+                transform: fly
+                  ? `translateX(${fly * -120}%) rotate(${fly * -12}deg)`
+                  : `translateX(${drag.dx}px) rotate(${drag.dx * 0.04}deg)`,
+                transition: drag.on ? 'none' : undefined,
+              }
+            : { '--d': Math.min(d, 3) }
+          return (
+            <Link
+              key={name}
+              to={`/events/${ev}`}
+              className={`pgd-card ${top ? 'top' : ''}`}
+              data-d={d}
+              style={style}
+              tabIndex={top ? 0 : -1}
+              aria-hidden={!top || undefined}
+              aria-label={`${name} — ${small}. See the album`}
+              draggable={false}
+              onClick={(e) => moved.current && e.preventDefault()}
+              {...(top ? { onPointerDown: onDown, onPointerMove: onMove, onPointerUp: onUp, onPointerCancel: onUp } : {})}
+            >
+              <span className="pgd-photo">
+                <img src={img} alt="" loading="lazy" draggable={false} />
+                <span className="pgd-num">0{i + 1}<i> / 0{n}</i></span>
+              </span>
+              <span className="pgd-body">
+                <small>{small}</small>
+                <b>{name}</b>
+                <span className="pgd-text">{text}</span>
+                <span className="pgd-cta">See the album <ArrowIcon /></span>
+                {top && <span className="pgd-prog" key={`p-${active}`} aria-hidden="true" />}
+              </span>
+            </Link>
+          )
+        })}
+      </div>
+      <div className="pgd-thumbs" role="group" aria-label="Choose a programme">
+        {PROGRAMMES.map(([, name, img], i) => (
+          <button
+            type="button"
+            key={name}
+            className={i === active ? 'on' : ''}
+            aria-label={name}
+            aria-current={i === active ? 'true' : undefined}
+            onClick={() => i !== active && deal(i > active ? 1 : -1, i)}
+          >
+            <img src={img} alt="" loading="lazy" />
+            <span>{name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /** Bento grid: one featured programme + three tiles, each opens its event album. */
 function ProgrammeBento() {
   return (
@@ -359,14 +516,21 @@ const QUOTE_MS = 7000
 function QuoteStage() {
   const [i, setI] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [seen, setSeen] = useState(false)
+  const boxRef = useRef(null)
   useEffect(() => {
-    if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const io = new IntersectionObserver(([e]) => setSeen(e.isIntersecting), { threshold: 0.2 })
+    io.observe(boxRef.current)
+    return () => io.disconnect()
+  }, [])
+  useEffect(() => {
+    if (paused || !seen || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const id = setTimeout(() => setI((v) => (v + 1) % QUOTES.length), QUOTE_MS)
     return () => clearTimeout(id)
-  }, [i, paused])
+  }, [i, paused, seen])
   const [stars, text, , who, role] = QUOTES[i]
   return (
-    <div className={`qs ${paused ? 'is-paused' : ''}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div ref={boxRef} className={`qs ${paused || !seen ? 'is-paused' : ''}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       <figure className="qs-stage" aria-live="polite">
         <svg className="qs-mark" viewBox="0 0 64 48" aria-hidden="true">
           <path d="M0 48V28C0 12 8 3 24 0l3 6C17 9 13 15 12 24h12v24zm36 0V28c0-16 8-25 24-28l3 6c-10 3-14 9-15 18h12v24z" />
@@ -437,20 +601,23 @@ const FIELD_TITLES = {
 function Faq() {
   const [open, setOpen] = useState(0)
   return (
-    <div className="faq" style={{ textAlign: 'left' }}>
-      {FAQ.map(([q, a], i) => (
-        <Reveal className={`faq-item ${open === i ? 'open' : ''}`} key={q} d={i % 2}>
-          <button className="faq-q" aria-expanded={open === i} onClick={() => setOpen(open === i ? -1 : i)}>
-            {q}
-            <span className="pm" aria-hidden="true">+</span>
-          </button>
-          <div className="faq-body">
-            <div>
-              <p>{a}</p>
+    <div className="faq">
+      {FAQ.map(([q, a], i) => {
+        const on = open === i
+        return (
+          <Reveal className={`faq-item ${on ? 'open' : ''}`} key={q} d={i % 2}>
+            <button type="button" className="faq-q" id={`faq-q${i}`} aria-expanded={on} aria-controls={`faq-a${i}`} onClick={() => setOpen(on ? -1 : i)}>
+              <span>{q}</span>
+              <span className="pm" aria-hidden="true" />
+            </button>
+            <div className="faq-body" id={`faq-a${i}`} role="region" aria-labelledby={`faq-q${i}`}>
+              <div>
+                <p>{a}</p>
+              </div>
             </div>
-          </div>
-        </Reveal>
-      ))}
+          </Reveal>
+        )
+      })}
     </div>
   )
 }
@@ -483,7 +650,7 @@ export default function Home() {
                 <linearGradient id="tkBark" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0" stopColor="#A07D3E" />
                   <stop offset=".45" stopColor="#7A5C28" />
-                  <stop offset="1" stopColor="#4A3717" />
+                  <stop offset="1" stopColor="#4A3514" />
                 </linearGradient>
                 <linearGradient id="tkLeafJ" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0" stopColor="#2F8A5E" />
@@ -494,7 +661,7 @@ export default function Home() {
                   <stop offset="1" stopColor="#F0D58A" />
                 </linearGradient>
                 <linearGradient id="tkVine" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor="#6E5424" />
+                  <stop offset="0" stopColor="#6B4C1D" />
                   <stop offset="1" stopColor="#D2AE57" />
                 </linearGradient>
                 <mask id="tkGrow" maskUnits="userSpaceOnUse" x="-40" y="-40" width={BW + 80} height={BH + 80}>
@@ -579,6 +746,8 @@ export default function Home() {
         </div>
       </section>
 
+      <SkillTree />
+
       <section className="band wsx-sec" id="workshops">
         <div className="wrap">
           <div className="tk-head">
@@ -641,6 +810,7 @@ export default function Home() {
           </div>
           <Reveal d={1}>
             <ProgrammeBento />
+            <ProgrammeDeck />
           </Reveal>
         </div>
       </section>
@@ -707,41 +877,21 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="band" id="gallery">
-        <div className="wrap center">
-          <Reveal className="kicker" style={{ justifyContent: 'center' }}>From the field</Reveal>
-          <Reveal as="h2" className="h2" d={1}>Workshops <em>in action.</em></Reveal>
-          <Reveal as="p" className="lead" d={2}>
-            Real rooms, real first speeches — photo stories from recent SparkTree programmes. Tap an event to see the full album.
-          </Reveal>
-          <Reveal className="stk-strip">
-            <div className="track">
-              {[...STRIP, ...STRIP].map(([slug, img, pos], i) => (
-                <Link key={i} to={`/events/${slug}`}>
-                  <img src={`/img/${img}.jpg`} alt="" loading="lazy" style={pos ? { objectPosition: pos } : undefined} />
-                </Link>
-              ))}
+      <section className="band fj-sec" id="gallery">
+        <div className="wrap">
+          <div className="tk-head">
+            <div>
+              <Reveal className="kicker">From the field</Reveal>
+              <Reveal as="h2" className="h2" d={1}>Workshops <em>in action.</em></Reveal>
             </div>
-            <div className="track rev">
-              {[...STRIP_B, ...STRIP_B].map(([slug, img, pos], i) => (
-                <Link key={i} to={`/events/${slug}`}>
-                  <img src={`/img/${img}.jpg`} alt="" loading="lazy" style={pos ? { objectPosition: pos } : undefined} />
-                </Link>
-              ))}
-            </div>
-          </Reveal>
-          <div className="prog-grid" style={{ marginTop: 46 }}>
-            {EVENTS.map((e, i) => (
-              <Reveal as={Link} className="prog" to={`/events/${e.slug}`} key={e.slug} d={i % 4}>
-                <img src={e.cover} alt="" loading="lazy" />
-                <figcaption>
-                  <small>{FIELD_COVERS[e.slug]}</small>
-                  <b>{FIELD_TITLES[e.slug]}</b>
-                </figcaption>
-              </Reveal>
-            ))}
+            <Reveal as="p" className="tk-lead" d={2}>
+              Real rooms, real first speeches. Ten photo stories from recent SparkTree programmes — pick one to step inside.
+            </Reveal>
           </div>
-          <Reveal className="gal-toggle">
+          <Reveal d={1}>
+            <FieldJournal titles={FIELD_TITLES} metas={FIELD_COVERS} />
+          </Reveal>
+          <Reveal className="fj-foot">
             <Mag>
               <Link className="btn btn--green" to="/events">See all events &amp; photos</Link>
             </Mag>
@@ -757,23 +907,35 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="contact" style={{ paddingTop: 0 }}>
+      <section id="contact" className="bk-sec">
         <div className="wrap">
-          <Reveal className="cta-ring">
-            <div className="cta">
-              <i className="sp c1" aria-hidden="true">✦</i>
-              <i className="sp c2" aria-hidden="true">✦</i>
-              <div>
-                <h3>Not sure which workshop fits your team?</h3>
-                <p>Share your team size, location and preferred dates — SparkTree sends a tailored quote.</p>
+          <Reveal className="bk">
+            <div className="bk-copy">
+              <span className="bk-kicker">Plan your workshop</span>
+              <h2 className="bk-h">Not sure which workshop <em>fits your team?</em></h2>
+              <p className="bk-lead">Share your team size, location and preferred dates — SparkTree sends a tailored quote.</p>
+              <ol className="bk-steps">
+                <li><b>01</b><span><strong>Tell us about your team</strong>Size, goals, location and dates.</span></li>
+                <li><b>02</b><span><strong>Quick needs analysis</strong>We shape the programme around your goals.</span></li>
+                <li><b>03</b><span><strong>Tailored quote &amp; dates</strong>Onsite day or two virtual half-days.</span></li>
+              </ol>
+              <div className="bk-ctas">
+                <Mag>
+                  <a className="btn btn--wa bk-wa" href={waLink("Hello, I'd like to know more about your corporate workshops.")} target="_blank" rel="noopener">
+                    <WaIcon />
+                    Book a workshop
+                  </a>
+                </Mag>
+                <a className="bk-alt" href="#workshops" onClick={(e) => { e.preventDefault(); glideTo('#workshops') }}>Browse workshops <ArrowIcon /></a>
               </div>
-              <Mag>
-                <a className="btn btn--wa" href={waLink("Hello, I'd like to know more about your corporate workshops.")} target="_blank" rel="noopener">
-                  <WaIcon />
-                  Book a workshop
-                </a>
-              </Mag>
             </div>
+            <figure className="bk-photo">
+              <img src="/img/sparktree-13.jpg" alt="Trainers Soujanya Hegde and Preetham Ponnappa" loading="lazy" />
+              <figcaption>
+                <span className="bk-dot" aria-hidden="true" />
+                <span><b>Soujanya &amp; Preetham</b>Lead trainers · in every session</span>
+              </figcaption>
+            </figure>
           </Reveal>
         </div>
       </section>
